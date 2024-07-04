@@ -1,9 +1,9 @@
-// client.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Client.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include "pch.h"
 #include "framework.h"
-#include "client.h"
+#include "Client.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -34,6 +34,29 @@ int main()
         else
         {
             // TODO: code your application's behavior here.
+            //Initialize
+            AfxSocketInit(NULL);
+            CSocket client;
+            char ip[100];
+            int port;
+            client.Create();
+
+            // input
+            cout << "Input IP address of server: "; cin >> ip;
+            cout << "Input port of server: "; cin >> port;
+
+            if (client.Connect(CA2W(ip), port))
+            {
+                cout << "\n Client has connected to the server";
+
+            }
+            else
+            {
+                cout << "\n Unable to connect to the server";
+            }
+
+
+
         }
     }
     else
