@@ -117,7 +117,7 @@ int main()
                         while (!in.eof())
                         {
                             getline(in, temp_2, '\n');
-                            if (temp_2 == "")continue;
+                            if (temp_2 == "")continue;cout<<""
                             //=======================Send file temp_2======================================
                             
 
