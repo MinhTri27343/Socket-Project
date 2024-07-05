@@ -22,6 +22,6 @@
 
 #include <iostream>
 #include"afxsock.h"
-
+#include<sstream>
 #include<string>
 #include<fstream>
