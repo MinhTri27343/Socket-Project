@@ -25,3 +25,5 @@
 #include<sstream>
 #include<string>
 #include<fstream>
+#include"Func.h"
+using namespace std;

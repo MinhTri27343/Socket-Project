@@ -14,7 +14,6 @@
 
 CWinApp theApp;
 
-using namespace std;
 
 int main()
 {
@@ -84,27 +83,11 @@ int main()
                     char* buffer_receive = new char[len + 1];
                     client.Receive(buffer_receive, len, 0);//Receives string
                     buffer_receive[len] = '\0';
-                    //===========Split string and write in list file need download=======================
-                    ofstream out;
-                    stringstream ss(buffer_receive);
-                    string file_recei="list_file_recei.txt";
-                    out.open(file_recei,ios::trunc);//Overwrite
-                    if (!out.is_open())
-                    {
-                        cout << "Write file error";
-                    }
-                    else
-                    {
-                        string temp_1;
-                        while (ss >> temp_1)
-                        {
-                            out <<temp_1<<"\n";
-                        }
-                        out.close();
-                    }
-
-                    //===========Split string and write in list file need download========================
+                  
                     //===========Send file ==============================================================
+                    string file_recei = "list_file_recei.txt";
+
+                    writeFileRecei(file_recei, buffer_receive);
                     
                     in.open(file_recei);
                     if (!in.is_open())
@@ -117,13 +100,20 @@ int main()
                         while (!in.eof())
                         {
                             getline(in, temp_2, '\n');
-                            if (temp_2 == "")continue;cout<<""
+                            if (temp_2 == "")continue; 
                             //=======================Send file temp_2======================================
-                            
+                            unsigned long long size_file = readSizeFile(temp_2);
 
+                            client.Send(&size_file, sizeof(size_file), 0);
 
-
-
+                            ifstream in_send;
+                            in_send.open(temp_2, ios::binary);
+                            int size_buff = 1;
+                            char* buff_send = new char[size_buff];
+                            while (in_send.read(buff_send, size_buff))
+                            {
+                                client.Send(buff_send, size_buff, 0);
+                            }
                             //=======================Send file temp_2======================================
 
 
