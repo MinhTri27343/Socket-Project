@@ -4,6 +4,11 @@
 #include "pch.h"
 #include "framework.h"
 #include "Client.h"
+#include "afxsock.h"
+#include<fstream>
+#include<signal.h>
+#include<string>
+#include<vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -15,7 +20,12 @@
 CWinApp theApp;
 
 using namespace std;
-
+//Ham dung de dung ctrl+c
+void SignalCallBack(int signum) {
+    cout << "Caught signal " << signum << endl;
+    
+    exit(signum);
+}
 int main()
 {
     int nRetCode = 0;
@@ -47,16 +57,25 @@ int main()
 
             if (client.Connect(CA2W(ip), port))
             {
-                cout << "\n Client has connected to the server";
+                cout << "\nClient has connected to the server\n";
 
             }
             else
             {
-                cout << "\n Unable to connect to the server";
+                cout << "\nUnable to connect to the server\n";
             }
-
-
-
+            
+            //Nhận từng byte rồi đồng thời in ra console và ghi vô file.
+            ofstream fout;
+            fout.open("test1.txt", ios::out | ios::binary);
+            char byte;
+            while (client.Receive(&byte, 1, 0))
+            {
+                fout << byte;
+                cout << byte;
+            }
+            fout.close();
+            signal(SIGINT, SignalCallBack);
         }
     }
     else
