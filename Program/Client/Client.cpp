@@ -57,14 +57,19 @@ int main()
                 cout << endl;
                 string fileName = "text1.txt";
                 ofstream fout;
-                fout.open("test1.txt", ios::out | ios::binary);
-                char byte;
-                while (client.Receive(&byte, 1, 0))
-                {
-                    fout << byte;
-                    cout << byte;
-                }
+                fout.open(fileName, ios::out | ios::binary);
+
+                long long byte;
+                client.Receive((char*)&byte, sizeof(long long), 0);
+
+                char* msg = new char[byte + 1];
+                client.Receive(msg, byte, 0);
+                msg[byte] = '\0';
+
+                fout << msg;
+                cout << msg;
                 fout.close();
+                
                 signal(SIGINT, SignalCallBack);
             }
             else
