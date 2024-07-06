@@ -48,28 +48,22 @@ int main()
                 cout << "Connect is succesfull!\n";
 
                 //===========================================Sent file list_file=============================================================
-                string file_name = "list_file.txt";
+                string list_file = "list_file.txt";
                 cout << "Sendding file!\n";
-                int byte_read = 1;
-
+                unsigned long long size_list_file = readSizeFile(list_file);
                 ifstream in;
-
-                in.open(file_name,ios::binary);//open file
-                if (!in.is_open())
+                in.open(list_file,ios::binary);  
+                if(!in.is_open())
                 {
-                    cout << "Reading file error";
+
+                    cout << "Send list file falled!\n";
                 }
                 else
                 {
-                    char* buffer = new char[byte_read];
-                    while (in.read(buffer, byte_read))
-                    {
-                        client.Send(buffer, byte_read, 0);
-                    }
-
-                    in.close();
+                    char* buffer = new char[size_list_file];
+                    in.read(buffer, size_list_file);
+                    client.Send(buffer, size_list_file, 0);
                     delete[] buffer;
-
                     cout << "Sending file text is successful!\n";
                 }
                 //===========================================Sent file list_file=============================================================
