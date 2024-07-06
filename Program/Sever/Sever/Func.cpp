@@ -32,7 +32,7 @@ unsigned long long readSizeFile(string file_name)
     if (!in.is_open())return size;
     else
     {
-        in.seekg(ios::end);
+        in.seekg(0,ios::end);
         size = in.tellg();
 
         in.close();

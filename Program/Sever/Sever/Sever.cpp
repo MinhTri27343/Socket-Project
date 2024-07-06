@@ -51,6 +51,8 @@ int main()
                 string list_file = "list_file.txt";
                 cout << "Sendding file!\n";
                 unsigned long long size_list_file = readSizeFile(list_file);
+                cout << size_list_file;
+                client.Send(&size_list_file, sizeof(size_list_file), 0);
                 ifstream in;
                 in.open(list_file,ios::binary);  
                 if(!in.is_open())

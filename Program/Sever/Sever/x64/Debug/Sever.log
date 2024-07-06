@@ -1,5 +1,2 @@
-﻿  Sever.cpp
-E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(65,41): warning C4244: 'argument': conversion from 'unsigned __int64' to 'int', possible loss of data
-  (compiling source file '/Sever.cpp')
-  
+﻿  Func.cpp
   Sever.vcxproj -> E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\x64\Debug\Sever.exe
