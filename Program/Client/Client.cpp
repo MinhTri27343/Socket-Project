@@ -59,8 +59,8 @@ int main()
                 ofstream fout;
                 fout.open(fileName, ios::out | ios::binary);
 
-                long long byte;
-                client.Receive((char*)&byte, sizeof(long long), 0);
+                unsigned long long byte;
+                client.Receive((char*)&byte, sizeof(byte), 0);
 
                 char* msg = new char[byte + 1];
                 client.Receive(msg, byte, 0);
@@ -68,7 +68,9 @@ int main()
 
                 fout << msg;
                 cout << msg;
+                
                 fout.close();
+                delete[] msg;
                 
                 signal(SIGINT, SignalCallBack);
             }
