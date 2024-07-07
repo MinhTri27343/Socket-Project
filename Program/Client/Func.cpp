@@ -138,7 +138,7 @@ char* fileDownload(char* Check, string file_check1, string file_check2, unsigned
 	{
 		if (isFileDownload(file_check1, file_check2, word, byte_size))
 		{
-			save += word;
+			save += word + " "; 
 		}
 	}
 	char* a = new char[save.size() + 1];
