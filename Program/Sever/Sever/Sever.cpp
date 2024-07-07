@@ -110,11 +110,13 @@ int main()
                             {
                                 client.Send(buff_send, size_buff, 0);
                             }
+                            in_send.close();
                             //=======================Send file temp_2======================================
 
 
-
                         }
+                        in.close();
+
                     }
 
                   
