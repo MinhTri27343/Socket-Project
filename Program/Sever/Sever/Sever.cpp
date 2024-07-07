@@ -66,6 +66,7 @@ int main()
                     client.Send(buffer, size_list_file, 0);
                     delete[] buffer;
                     cout << "Sending file text is successful!\n";
+                    in.close();
                 }
                 //===========================================Sent file list_file=============================================================
 
@@ -88,20 +89,28 @@ int main()
                     //===========Send file ==============================================================
 
                     in.open(file_recei);
+                  
                     if (!in.is_open())
                     {
                         cout << "Read file error";
                     }
                     else
                     {
+                       
                         string temp_2;
                         while (!in.eof())
                         {
+                          
                             getline(in, temp_2, '\n');
-                            if (temp_2 == "")continue; 
+                            if (temp_2 == "")
+                            {
+            
+                                continue;
+                            }
                             //=======================Send file temp_2======================================
+                            cout << "Sending file " << temp_2 << " for client!\n";
                             unsigned long long size_file = readSizeFile(temp_2);
-                            int size_tmp2 = temp_2.length();
+                            unsigned long long size_tmp2 = temp_2.length();
                             client.Send(&size_tmp2, sizeof(size_tmp2), 0);//Send length of name file
                             client.Send(&temp_2, size_tmp2, 0);//Send name file
                             client.Send(&size_file, sizeof(size_file), 0);//Send size of file
@@ -131,9 +140,11 @@ int main()
                             }
                             delete[]buff_send;
                             in_send.close();
+                            cout << "Client download file successful!\n";
                             //=======================Send file temp_2======================================
                         }
                         in.close();
+                       
                     }
 
                

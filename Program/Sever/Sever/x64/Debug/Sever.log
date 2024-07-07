@@ -2,10 +2,13 @@
 E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(66,41): warning C4244: 'argument': conversion from 'unsigned __int64' to 'int', possible loss of data
   (compiling source file '/Sever.cpp')
   
-E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(104,43): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(80,52): warning C4244: 'argument': conversion from 'unsigned __int64' to 'int', possible loss of data
   (compiling source file '/Sever.cpp')
   
-E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(116,47): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
+E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(115,50): warning C4244: 'argument': conversion from 'unsigned __int64' to 'int', possible loss of data
+  (compiling source file '/Sever.cpp')
+  
+E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\Sever\Sever.cpp(125,47): warning C4244: 'initializing': conversion from 'std::streamsize' to 'int', possible loss of data
   (compiling source file '/Sever.cpp')
   
   Sever.vcxproj -> E:\HK3-2024\MMT\Project_Socket\Project\Socket-Project\Program\Sever\x64\Debug\Sever.exe
