@@ -1,34 +1,13 @@
 #include"Func.h"
 #include"pch.h"
+#include<conio.h>
 #define HORIZONTAL_LINE char(196)
 #define VERTICAL_LINE char(179)
 #define CORNER_LEFT_TOP char(218)
 #define CORNER_LEFT_BOT char(192)
 #define CORNER_RIGHT_BOT char(217)
 #define CORNER_RIGHT_TOP char(191)
-#include<conio.h>
-string normalizeChar(char* source)
-{
-	string destination = "";
-	while (*source)
-	{
-		destination += source; 
-		source++;
-	}
-	return destination;
-}
-char* normalizeString(string source)
-{
-	char* destination = new char[source.size() + 1];
-	for (int i = 0; i < source.size(); i++)
-	{
-		destination[i] = source[i];
-	}
-	destination[source.size()] = '\0';
-	return destination;
-}
-
-void gotoxy(int x, int y)
+void gotoxy(unsigned long long x, unsigned long long y)
 {
 	static HANDLE h = NULL;
 	if (!h)
@@ -36,7 +15,7 @@ void gotoxy(int x, int y)
 	COORD c = { x, y };
 	SetConsoleCursorPosition(h, c);
 }
-void createBox(int x, int y, int width, int height)
+void createBox(unsigned long long x, unsigned long long y, unsigned long long width, unsigned long long height)
 {
 
 	for (int i = 0; i < width; i++)
@@ -69,50 +48,100 @@ void ShowCur(bool CursorVisibility)
 	CONSOLE_CURSOR_INFO cursor = { 1, CursorVisibility };
 	SetConsoleCursorInfo(handle, &cursor);
 }
-int getByteSum(string fileName)
+unsigned long long getByteSum(string fileName)
 {
 	ifstream in(fileName, ios::binary);
 	in.seekg(0, ios::end);
-	int byte_sum = in.tellg();
+	unsigned long long byte_sum = in.tellg();
 	return byte_sum;
 }
-void displayDownload(int coordinate_x, int coordinate_y, string source, int byte_read)
+//Ham dung de dung ctrl+c
+void SignalCallBack(int signum) {
+	cout << "Caught signal " << signum << endl;
+
+	exit(signum);
+}
+char* normalizeChar(char* source)
 {
-	// Fix destination
-	string destination = "1" + source;
-
-	// Initialize
-	ShowCur(0);
-	int width = 26 + source.size();
-	int height = 2;
-	int percent = 0;
-	int byte_sum = getByteSum(source);
-	createBox(coordinate_x, coordinate_y, width, height);
-	gotoxy(coordinate_x + 1, coordinate_y + 1);
-	cout << "Downloading " << source << " .... ";
-
-	// copy file 
-	ifstream in(source, ios::binary);
-	ofstream out(destination, ios::binary);
-	char* read = new char[byte_read];
-	while (in.read(read, byte_read))
+	string s = source;
+	while (s[0] == '\n')
 	{
-		percent += byte_read;
-		out.write(read, byte_read);
-		gotoxy(coordinate_x + 20 + source.size(), coordinate_y + 1);
-		cout << (percent * 100) / byte_sum << "%";
-		Sleep(100);
+		s.erase(0, 1);
 	}
-	if (in.gcount() > 0)
+	for (int i = 0; i < s.size(); i++)
 	{
-		in.read(read, in.gcount());
-		percent += in.gcount();
-		gotoxy(coordinate_x + 20 + source.size(), coordinate_y + 1);
-		cout << (percent * 100) / byte_sum << "%";
-		_getch();
+		if (s[i] == 'Í')
+		{
+			s.erase(i, 1);
+			i--;
+		}
+		if (s[i] == '\n')
+		{
+			s[i] = ' ';
+		}
 	}
-	delete[] read;
+	char* a = new char[s.size() + 1];
+	strcpy_s(a, s.size() + 1, s.c_str());
+	return a;
+}
+bool isFileDownload(string file_check1, string file_check2, string file_name, unsigned long long byte_size)
+{
+	// Condition1: Is file_name exist in file input.txt ?
+	ifstream fin(file_check1, ios::binary);
+	if (!fin)
+	{
+		cout << "Read file error\n";
+		return false;
+	}
+	if (byte_size > 0)
+	{
+		char* check = new char[byte_size];
+		fin.read(check, byte_size);
+		string Check = check;
+		if (Check.find(file_name) != string::npos)
+		{
+			cout << "File is exist \n";
+			fin.close();
+			return false;
+		}
+		delete[] check;
+		fin.close();
+	}
+
+	// Condition2: Has file_name in list_file ?  
+	ifstream in(file_check2, ios::in);
+	if (!in)
+	{
+		cout << "Read file error\n";
+		return false;
+	}
+	string word;
+	while (getline(in, word))
+	{
+		if (word.find(file_name) != string::npos)
+		{
+			fin.close();
+			return true;
+		}
+	}
 	in.close();
-	out.close();
+	return false;
 
+}
+char* fileDownload(char* Check, string file_check1, string file_check2, unsigned long long byte_size)
+{
+	string check = Check;
+	stringstream ss(check);
+	string word;
+	string save = "";
+	while (ss >> word)
+	{
+		if (isFileDownload(file_check1, file_check2, word, byte_size))
+		{
+			save += word;
+		}
+	}
+	char* a = new char[save.size() + 1];
+	strcpy_s(a, save.size() + 1, save.c_str());
+	return a;
 }
