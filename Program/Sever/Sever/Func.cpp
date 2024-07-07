@@ -20,6 +20,7 @@ void writeFileRecei(string file_recei, char * buffer_receive)
             out << temp_1 << "\n";
         }
         out.close();
+        cout << "Received file need to download!\n";
     }
 
 
