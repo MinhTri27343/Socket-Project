@@ -1,0 +1,8 @@
+file1.zip 500MB
+file2.zip 30MB
+file3.zip 1GB
+2023_Session10_Review.pdf
+2023_Session07_Graph_Part01.pdf
+2023_Session09_Hashing.pdf
+2023_Session05_Tree_Part01.pdf
+2023_Session06_Tree_Part02.pdf

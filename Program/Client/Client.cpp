@@ -83,7 +83,11 @@ int main()
                 while (true)
                 {
                     ifstream in(file_user);
-                    if (!in) return 0;
+                    if (!in)
+                    {
+                        cout << "\nCan not open file \n";
+                        return 0;
+                    }
                     size_after_file = getByteSum(file_user);
                     if (size_after_file > size_pre_file)
                     {
@@ -104,81 +108,85 @@ int main()
                         delete[] temp;
                         delete[] send;
                         size_pre_file = size_after_file;
+
+                        // ================= Sending file name need to download for server ======================
+
+                        // ===================== Ghi nhan ten file download tu server  =============================
+
+                        // Initialize
+                        unsigned long long size_name_file_download = 0;
+                        unsigned long long size_file_download = 0;
+                        char* name_file_download = NULL;
+                        char* file_download = NULL;
+                        unsigned long long byte_read = 1;
+
+                        // Ghi nhan ten file download 
+                        client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
+
+                        name_file_download = new char[size_name_file_download + 1];
+                        client.Receive(name_file_download, size_name_file_download, 0);
+                        name_file_download[size_name_file_download] = '\0';
+                        string name_file_download_str = name_file_download;
+
+
+                        // Ghi nhan byte cua file download 
+                        client.Receive((char*)&size_file_download, sizeof(size_file_download), 0);
+
+                        // ===================== Ghi nhan ten  file download tu server  =============================
+
+                        // ================== Display console percent of file downloading ================
+
+                        // Initialize
+                        ShowCur(0);
+                        unsigned long long width = 26 + name_file_download_str.size();
+                        unsigned long long height = 2;
+                        unsigned long long byte_sum = getByteSum(name_file_download_str);
+                        unsigned long long coordinate_x = 30;
+                        unsigned long long coordinate_y = 4;
+
+                        createBox(coordinate_x, coordinate_y, width, height);
+                        gotoxy(coordinate_x + 1, coordinate_y + 1);
+                        cout << "Downloading " << name_file_download_str << " .... ";
+
+
+                        ofstream out(name_file_download_str); // test truoc roi them vao folder output sau
+
+                        unsigned long long total_byte_curr = 0;
+                        while (total_byte_curr < size_file_download)
+                        {
+                            // receive byte of file download from server  
+                            char* read_byte_file_download = new char[byte_read];
+                            if (size_file_download - total_byte_curr < byte_read)
+                            {
+                                client.Receive(read_byte_file_download, size_file_download - total_byte_curr);
+                                out.write(read_byte_file_download, size_file_download - total_byte_curr);
+                                total_byte_curr = size_file_download;
+
+                            }
+                            else
+                            {
+                                total_byte_curr += byte_read;
+                                client.Receive(read_byte_file_download, total_byte_curr);
+                                out.write(read_byte_file_download, byte_read);
+                            }
+                            gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
+                            cout << (total_byte_curr * 100) / byte_sum << "%";
+                            Sleep(100); // Sleep for see downloading 
+                            delete[] read_byte_file_download;
+                        }
+
+
+                        delete[] name_file_download;
+                        delete[] file_download;
+                        out.close();
+
+
                     }
-                    in.close();
-
-                // ================= Sending file name need to download for server ======================
-
-                    // ===================== Ghi nhan ten file download tu server  =============================
-
-                    // Initialize
-                    unsigned long long size_name_file_download = 0;
-                    unsigned long long size_file_download = 0;
-                    char* name_file_download = NULL;
-                    char* file_download = NULL;
-                    unsigned long long byte_read = 1; 
-
-                    // Ghi nhan ten file download 
-                    client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
-                    name_file_download = new char[size_name_file_download + 1];
-                    client.Receive(name_file_download, size_name_file_download, 0);
-                    name_file_download[size_name_file_download] = '\0';
-                    string name_file_download_str = name_file_download;
-                 
-
-                    // Ghi nhan byte cua file download 
-                    client.Receive((char*)&size_file_download, sizeof(size_file_download), 0);
-
-                    // ===================== Ghi nhan ten  file download tu server  =============================
-
                     // ================== Display console percent of file downloading ================
-
-                    // Initialize
-                    ShowCur(0);
-                    unsigned long long width = 26 + name_file_download_str.size();
-                    unsigned long long height = 2;
-                    unsigned long long byte_sum = getByteSum(name_file_download_str);
-                    unsigned long long coordinate_x = 30;
-                    unsigned long long coordinate_y = 4;
-
-                    createBox(coordinate_x, coordinate_y, width, height);
-                    gotoxy(coordinate_x + 1, coordinate_y + 1);
-                    cout << "Downloading " << name_file_download_str << " .... ";
-
-                   
-                    ofstream out(name_file_download_str); // test truoc roi them vao folder output sau
-
-                    unsigned long long total_byte_curr = 0;
-                    while (total_byte_curr < size_file_download)
-                    {
-                        // receive byte of file download from server  
-                        char* read_byte_file_download = new char[byte_read];
-                        if (size_file_download - total_byte_curr < byte_read)
-                        {
-                            client.Receive(read_byte_file_download, size_file_download - total_byte_curr);
-                            out.write(read_byte_file_download, size_file_download - total_byte_curr);
-                            total_byte_curr = size_file_download;
-                           
-                        }
-                        else
-                        {
-                            total_byte_curr += byte_read;
-                            client.Receive(read_byte_file_download, total_byte_curr);
-                            out.write(read_byte_file_download, byte_read);
-                        }
-                        gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
-                        cout << (total_byte_curr * 100) / byte_sum << "%";
-                        Sleep(100); // Sleep for see downloading 
-                        delete[] read_byte_file_download;
-                    }
-              
-
-                    delete[] name_file_download;
-                    delete[] file_download;
-                    out.close();
-
+                    in.close();
                 }
-                // ================== Display console percent of file downloading ================
+
+              
             }
 
 // =============================================== Minh tri ====================================================================
