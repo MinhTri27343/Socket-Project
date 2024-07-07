@@ -106,9 +106,21 @@ int main()
                             in_send.open(temp_2, ios::binary);
                             int size_buff = 1;
                             char* buff_send = new char[size_buff];
-                            while (in_send.read(buff_send, size_buff))
+                            while (true)
                             {
-                                client.Send(buff_send, size_buff, 0);
+                                in_send.read(buff_send, size_buff);
+                                int size_read = in_send.gcount();
+                                if (size_read <= size_buff)
+                                {
+                                    client.Send(buff_send, size_read, 0);
+                                    break;
+                                }
+                                else
+                                {
+                                    client.Send(buff_send, size_buff, 0);
+
+                                }
+
                             }
                             in_send.close();
                             //=======================Send file temp_2======================================
