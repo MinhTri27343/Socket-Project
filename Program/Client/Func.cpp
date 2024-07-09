@@ -70,7 +70,7 @@ char* normalizeChar(char* source)
 	}
 	for (int i = 0; i < s.size(); i++)
 	{
-		if (s[i] == '�')
+		if (s[i] == 'Í')
 		{
 			s.erase(i, 1);
 			i--;
@@ -138,10 +138,130 @@ char* fileDownload(char* Check, string file_check1, string file_check2, unsigned
 	{
 		if (isFileDownload(file_check1, file_check2, word, byte_size))
 		{
-			save += word + " "; 
+			save += word + " ";
 		}
 	}
 	char* a = new char[save.size() + 1];
 	strcpy_s(a, save.size() + 1, save.c_str());
 	return a;
+}
+void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long long& size_pre_file, unsigned long long& size_after_file, string file_check1, string file_check2, bool& checkIsExist, char*& send)
+{
+	ifstream in;
+	in.open(file_user, ios::in | ios::binary);
+	if (!in.is_open())
+	{
+		return;
+	}
+	size_after_file = getByteSum(file_user);
+	if (size_after_file > size_pre_file) //Nếu có cập nhật mới
+	{
+		unsigned long long byte_size = size_after_file - size_pre_file;
+		in.seekg(size_pre_file, ios::beg);
+		char* information_file = new char[byte_size + 1];
+		in.read(information_file, byte_size);
+		information_file[byte_size] = '\0';
+		char* temp = normalizeChar(information_file);
+		send = fileDownload(temp, file_check1, file_check2, size_pre_file);
+		unsigned long long size_send = strlen(send);
+		if (size_send > 0)
+		{
+			client.Send((char*)&size_send, sizeof(size_send), 0); 
+			client.Send(send, size_send, 0);
+			checkIsExist = false;
+		}
+		else
+		{
+			size_pre_file = size_after_file;
+		}
+		delete[] information_file;
+		delete[] temp;
+	}
+	in.close();
+}
+void ReceiveInfo1FileFromServer(CSocket& client, unsigned long long& size_name_file_download, unsigned long long& size_file_download, char*& name_file_download)
+{
+	// Ghi nhan so byte cua ten file
+	client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
+
+	name_file_download = new char[size_name_file_download + 1];
+	//Ghi nhan ten file
+	client.Receive(name_file_download, size_name_file_download, 0);
+	name_file_download[size_name_file_download] = '\0';
+
+	// Ghi nhan byte cua file download 
+	client.Receive((char*)&size_file_download, sizeof(size_file_download), 0);
+}
+void ReceiveInfoAllFileFromServer(CSocket& client)
+{
+	string file_name = "text1.txt";
+	ofstream fout;
+	fout.open(file_name, ios::out | ios::binary);
+	unsigned long long byte;
+	client.Receive((char*)&byte, sizeof(byte), 0);
+	char* msg = new char[byte + 1];
+	client.Receive(msg, byte, 0);
+	msg[byte] = '\0';
+
+	fout << msg;
+	cout << msg;
+
+	fout.close();
+	delete[] msg;
+}
+void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned long long size_file_download)
+{
+	string name_file_download_str = name_file_download;
+	ShowCur(0);
+	unsigned long long width = 26 + name_file_download_str.size();
+	unsigned long long height = 2;
+	unsigned long long byte_sum = size_file_download;
+	unsigned long long coordinate_x = 30;
+	unsigned long long coordinate_y = 4;
+
+	createBox(coordinate_x, coordinate_y, width, height);
+	gotoxy(coordinate_x + 1, coordinate_y + 1);
+	cout << "Downloading " << name_file_download_str << " .... ";
+
+
+	ofstream out; 
+	out.open(name_file_download_str.c_str(), ios::app | ios::out | ios::binary);
+	unsigned long long total_byte_curr = 0;
+	unsigned long long byte_read = 1024;
+	while (total_byte_curr < size_file_download)
+	{
+		// receive byte of file download from server  
+		char* read_byte_file_download = new char[byte_read];
+		if (size_file_download - total_byte_curr < byte_read)
+		{
+			client.Receive(read_byte_file_download, size_file_download - total_byte_curr, 0);
+			read_byte_file_download[size_file_download - total_byte_curr] = '\0';
+			out.write(read_byte_file_download, size_file_download - total_byte_curr);
+			total_byte_curr = size_file_download;
+		}
+		else
+		{
+			total_byte_curr += byte_read;
+			client.Receive(read_byte_file_download, byte_read, 0);
+			out.write(read_byte_file_download, byte_read);
+		}
+		gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
+		cout << (total_byte_curr * 100) / byte_sum << "%";
+		Sleep(100); // Sleep for see downloading 
+		delete[] read_byte_file_download;
+	}
+	delete[] name_file_download;
+	out.close();
+}
+int NumOfFile(char* c)
+{
+	string str = c;
+	int count = 0;
+	stringstream ss(str);
+	string word;
+	while (ss >> word)
+	{
+		count++;
+	}
+	return count;
 }
