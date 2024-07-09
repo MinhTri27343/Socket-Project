@@ -63,10 +63,11 @@ int main()
                 // ================= Sending file name need to download for server ======================
                 string file_user = "input.txt";
                 string file_name = "text1.txt";
+                unsigned long long size_pre_file = getByteSum(file_user);
+                unsigned long long size_after_file = getByteSum(file_user);
                 while (true)
                 {
-                    unsigned long long size_pre_file = getByteSum(file_user);
-                    unsigned long long size_after_file = getByteSum(file_user);
+                
                     string file_check1 = file_user;
                     string file_check2 = file_name;
                     bool CheckIsExist = true;
