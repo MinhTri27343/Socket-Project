@@ -67,7 +67,6 @@ int main()
                 unsigned long long size_after_file = getByteSum(file_user);
                 while (true)
                 {
-                
                     string file_check1 = file_user;
                     string file_check2 = file_name;
                     bool CheckIsExist = true;
@@ -77,7 +76,7 @@ int main()
                         // ================= Sending file name need to download for server ======================
                         SendFileNeedDownToServer(ref(client), file_user, size_pre_file, size_after_file, file_check1, file_check2, CheckIsExist, str);
                     }
-                    size_after_file = size_pre_file;
+                    size_pre_file = size_after_file;
                     int num_file = 0;
                     if (str != NULL)
                         num_file = NumOfFile(str);
