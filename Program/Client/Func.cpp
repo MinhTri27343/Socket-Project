@@ -17,7 +17,6 @@ void gotoxy(unsigned long long x, unsigned long long y)
 }
 void createBox(unsigned long long x, unsigned long long y, unsigned long long width, unsigned long long height)
 {
-
 	for (int i = 0; i < width; i++)
 	{
 		gotoxy(x + i + 1, y);
@@ -48,19 +47,20 @@ void ShowCur(bool CursorVisibility)
 	CONSOLE_CURSOR_INFO cursor = { 1, CursorVisibility };
 	SetConsoleCursorInfo(handle, &cursor);
 }
+void SignalCallBack(int signum) {
+	cout << "Caught signal " << signum << endl;
+
+	exit(signum);
+}
 unsigned long long getByteSum(string fileName)
 {
+	signal(SIGINT, SignalCallBack);
 	ifstream in(fileName, ios::binary);
 	in.seekg(0, ios::end);
 	unsigned long long byte_sum = in.tellg();
 	return byte_sum;
 }
 //Ham dung de dung ctrl+c
-void SignalCallBack(int signum) {
-	cout << "Caught signal " << signum << endl;
-
-	exit(signum);
-}
 char* normalizeChar(char* source)
 {
 	string s = source;
@@ -147,6 +147,7 @@ char* fileDownload(char* Check, string file_check1, string file_check2, unsigned
 }
 void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long long& size_pre_file, unsigned long long& size_after_file, string file_check1, string file_check2, bool& checkIsExist, char*& send)
 {
+	signal(SIGINT, SignalCallBack);
 	ifstream in;
 	in.open(file_user, ios::in | ios::binary);
 	if (!in.is_open())
@@ -181,6 +182,7 @@ void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long l
 }
 void ReceiveInfo1FileFromServer(CSocket& client, unsigned long long& size_name_file_download, unsigned long long& size_file_download, char*& name_file_download)
 {
+	signal(SIGINT, SignalCallBack);
 	// Ghi nhan so byte cua ten file
 	client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
 
@@ -211,6 +213,7 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 }
 void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned long long size_file_download)
 {
+	signal(SIGINT, SignalCallBack);
 	string name_file_download_str = name_file_download;
 	ShowCur(0);
 	unsigned long long width = 26 + name_file_download_str.size();
@@ -247,7 +250,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 		}
 		gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
 		cout << (total_byte_curr * 100) / byte_sum << "%";
-		Sleep(100); // Sleep for see downloading 
+		//Sleep(100); // Sleep for see downloading 
 		delete[] read_byte_file_download;
 	}
 	delete[] name_file_download;
@@ -255,6 +258,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 }
 int NumOfFile(char* c)
 {
+	signal(SIGINT, SignalCallBack);
 	string str = c;
 	int count = 0;
 	stringstream ss(str);
