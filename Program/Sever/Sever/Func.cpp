@@ -42,12 +42,14 @@ unsigned long long readSizeFile(string file_name)
     return size;
 
 }
-void ReadFileNeedDownFromClient(CSocket& client)
+bool ReadFileNeedDownFromClient(CSocket& client)
 {
     unsigned long long len = 0;
-    client.Receive((char*)&len, sizeof(len), 0);//Receives length of string
+    if (client.Receive((char*)&len, sizeof(len), 0) == SOCKET_ERROR)//Receives length of string
+        return false;
     char* buffer_receive = new char[len + 1];
-    client.Receive(buffer_receive, len, 0);//Receives string
+    if (client.Receive(buffer_receive, len, 0) == SOCKET_ERROR)//Receives string
+        return false;
     buffer_receive[len] = '\0';
 
     string file_recei = "list_file_recei.txt";
@@ -55,45 +57,52 @@ void ReadFileNeedDownFromClient(CSocket& client)
     writeFileRecei(file_recei, buffer_receive);
 
     delete[] buffer_receive;
+    return true;
 }
-void SendInfo1FileToClient(CSocket& client, string temp_2)
+bool SendInfo1FileToClient(CSocket& client, string temp_2)
 {
     cout << "Sending file " << temp_2 << " for client!\n";
     unsigned long long size_file = readSizeFile(temp_2);
     unsigned long long size_tmp2 = temp_2.length();
-    client.Send((char*)&size_tmp2, sizeof(size_tmp2), 0);//Send length of name file
-
+    if (client.Send((char*)&size_tmp2, sizeof(size_tmp2), 0) == SOCKET_ERROR)//Send length of name file
+        return false;
     char* name_file = new char[size_tmp2 + 1];
     strcpy_s(name_file, size_tmp2 + 1, temp_2.c_str());
     name_file[size_tmp2] = '\0';
 
-    client.Send(name_file, size_tmp2, 0);//Send name file
-    client.Send(&size_file, sizeof(size_file), 0);//Send size of file
+    if (client.Send(name_file, size_tmp2, 0) == SOCKET_ERROR)//Send name file
+        return false;
+    if (client.Send(&size_file, sizeof(size_file), 0) == SOCKET_ERROR)
+        return false;//Send size of file
+    return true;
 }
-void SendInfoAllFileToClient(CSocket& client)
+bool SendInfoAllFileToClient(CSocket& client)
 {
     string list_file = "list_file.txt";
     cout << "Sending list file!\n";
     unsigned long long size_list_file = readSizeFile(list_file);
-    client.Send((char*)&size_list_file, sizeof(size_list_file), 0);
+    if (client.Send((char*)&size_list_file, sizeof(size_list_file), 0) == SOCKET_ERROR)
+        return false;
     ifstream in;
     in.open(list_file, ios::binary);
     if (!in.is_open())
     {
         cout << "Send list file falled!\n";
-        return;
+        return true;
     }
     else
     {
         char* buffer = new char[size_list_file];
         in.read(buffer, size_list_file);
-        client.Send(buffer, size_list_file, 0);
+        if (client.Send(buffer, size_list_file, 0) == SOCKET_ERROR)
+            return false;
         delete[] buffer;
         cout << "Sending file text is successful!\n";
         in.close();
     }
+    return true;
 }
-void Send1FileToClient(CSocket& client, string fileNeedDown)
+bool Send1FileToClient(CSocket& client, string fileNeedDown)
 {
     ifstream in_send;
     in_send.open(fileNeedDown.c_str(), ios::binary);
@@ -106,17 +115,20 @@ void Send1FileToClient(CSocket& client, string fileNeedDown)
         if (byte_sum + size_buff <= total_byte)
         {
             in_send.read(buff_send, size_buff);
-            client.Send(buff_send, size_buff, 0);
+            if (client.Send(buff_send, size_buff, 0) == SOCKET_ERROR)
+                return false;
             byte_sum = byte_sum + size_buff;
         }
         else
         {
             in_send.read(buff_send, total_byte - byte_sum);
-            client.Send(buff_send, total_byte - byte_sum, 0);
+            if (client.Send(buff_send, total_byte - byte_sum, 0) == SOCKET_ERROR)
+                return false;
             byte_sum = byte_sum + size_buff;
         }
     }
     delete[]buff_send;
     in_send.close();
     cout << "Client download file successful!\n";
+    return true;
 }
