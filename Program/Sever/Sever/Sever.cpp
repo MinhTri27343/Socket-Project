@@ -35,54 +35,62 @@ int main()
             // =============================================================
             AfxSocketInit(NULL);
             CSocket sever;
-            CSocket client;
             sever.Create(1234);
             cout << "Server is listening!\n";
             sever.Listen();
-            if (sever.Accept(client))
+            int n;
+            cout << "Input the number of clients: ";
+            cin >> n;
+            CSocket* client = new CSocket[n];
+            for (int i = 0; i < n; i++)
             {
-                cout << "Connect is succesful!\n";
-
-                //===========================================Sent file list_file=============================================================
-                SendInfoAllFileToClient(ref(client));
-                //===========================================Sent file list_file=============================================================
-
-                //============================================Receive list file need download=====================================================
-                while (true)
+                if (sever.Accept(client[i]))
                 {
-                    ifstream in;
-                    ReadFileNeedDownFromClient(ref(client));
-                    cout << "Received file need to download!\n";
-                    //===========Send file ==============================================================
-                    string file_recei = "list_file_recei.txt";
-                    in.open(file_recei);
+                    cout << "Connect is succesful!\n";
 
-                    if (!in.is_open())
+                    //===========================================Sent file list_file=============================================================
+                    if (SendInfoAllFileToClient(ref(client[i])) == false)
+                        continue;
+                    //===========================================Sent file list_file=============================================================
+
+                    //============================================Receive list file need download=====================================================
+                    while (true)
                     {
-                        cout << "Read file error";
-                        return 0;
-                    }
-                    else
-                    {
-                        string temp_2;
-                        while (getline(in, temp_2, '\n'))
+                        ifstream in;
+                        if (ReadFileNeedDownFromClient(ref(client[i])) == false)
+                            break;
+                        cout << "Received file need to download!\n";
+                        //===========Send file ==============================================================
+                        string file_recei = "list_file_recei.txt";
+                        in.open(file_recei);
+
+                        if (!in.is_open())
                         {
-                            SendInfo1FileToClient(ref(client), temp_2); //đúng rồi khỏi sửa
-                            Send1FileToClient(ref(client), temp_2);
+                            cout << "Read file error";
+                            return 0;
                         }
-                        in.close();
-                        //===========Send file ============================================================
+                        else
+                        {
+                            string temp_2;
+                            while (getline(in, temp_2, '\n'))
+                            {
+                                if (SendInfo1FileToClient(ref(client[i]), temp_2) == false)//đúng rồi khỏi sửa
+                                    break;
+                                if (Send1FileToClient(ref(client[i]), temp_2) == false)
+                                    break;
+                            }
+                            in.close();
+                            //===========Send file ============================================================
+                        }
                     }
+                    //============================================Receive list file need download=====================================================
                 }
-                //============================================Receive list file need download=====================================================
-            }
-            else
-            {
-                cout << "Connect is falled!\n";
-
+                else
+                {
+                    cout << "Connect is falled!\n";
+                }
             }
             // =============================================================
-
         }
     }
     else
