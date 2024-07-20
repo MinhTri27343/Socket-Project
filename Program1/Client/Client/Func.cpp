@@ -185,7 +185,7 @@ void ReceiveInfo1FileFromServer(CSocket& client, unsigned long long& size_name_f
 	signal(SIGINT, SignalCallBack);
 	// Ghi nhan so byte cua ten file
 	client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
-
+	
 	name_file_download = new char[size_name_file_download + 1];
 	//Ghi nhan ten file
 	client.Receive(name_file_download, size_name_file_download, 0);
@@ -230,28 +230,24 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	ofstream out;
 	out.open(name_file_download_str.c_str(), ios::app | ios::out | ios::binary);
 	unsigned long long total_byte_curr = 0;
-	unsigned long long byte_read = 1024;
+	unsigned long long byte_read = 20480;
+
 	while (total_byte_curr < size_file_download)
 	{
+
 		// receive byte of file download from server  
 		char* read_byte_file_download = new char[byte_read];
-		if (size_file_download - total_byte_curr < byte_read)
-		{
-			client.Receive(read_byte_file_download, size_file_download - total_byte_curr, 0);
-			read_byte_file_download[size_file_download - total_byte_curr] = '\0';
-			out.write(read_byte_file_download, size_file_download - total_byte_curr);
-			total_byte_curr = size_file_download;
-		}
-		else
-		{
-			total_byte_curr += byte_read;
-			client.Receive(read_byte_file_download, byte_read, 0);
-			out.write(read_byte_file_download, byte_read);
-		}
+		int byte_rec = client.Receive(read_byte_file_download, byte_read, 0);
+		out.write(read_byte_file_download, byte_rec);
+		total_byte_curr = total_byte_curr + byte_rec;
+		
+		//=========================================================
+
 		gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
 		cout << (total_byte_curr * 100) / byte_sum << "%";
-		//Sleep(100); // Sleep for see downloading 
+		
 		delete[] read_byte_file_download;
+	
 	}
 	delete[] name_file_download;
 	out.close();
