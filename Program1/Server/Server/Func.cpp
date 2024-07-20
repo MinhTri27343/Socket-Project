@@ -106,28 +106,32 @@ bool Send1FileToClient(CSocket& client, string fileNeedDown)
 {
     ifstream in_send;
     in_send.open(fileNeedDown.c_str(), ios::binary);
-    int size_buff = 1024;
-    char* buff_send = new char[size_buff];
+    int size_buff = 20480;
     unsigned long long total_byte = readSizeFile(fileNeedDown);
     unsigned long long byte_sum = 0;
-    while (byte_sum < total_byte)
+
+    while (!in_send.eof())
     {
-        if (byte_sum + size_buff <= total_byte)
+        char* buff_send = new char[size_buff];
+        in_send.read(buff_send, size_buff);
+        int byte_read = in_send.gcount();
+      
+        int byte_send = client.Send(buff_send, byte_read, 0);
+        if (byte_send == SOCKET_ERROR) return false;
+
+        while (byte_send < byte_read)
         {
-            in_send.read(buff_send, size_buff);
-            if (client.Send(buff_send, size_buff, 0) == SOCKET_ERROR)
-                return false;
-            byte_sum = byte_sum + size_buff;
+            int temp_byte_send;
+            temp_byte_send = client.Send(buff_send + byte_send, byte_read - byte_send, 0) ;
+            if (temp_byte_send == SOCKET_ERROR) return false;
+            byte_send = temp_byte_send + byte_send;   
         }
-        else
-        {
-            in_send.read(buff_send, total_byte - byte_sum);
-            if (client.Send(buff_send, total_byte - byte_sum, 0) == SOCKET_ERROR)
-                return false;
-            byte_sum = byte_sum + size_buff;
-        }
+
+        byte_sum += byte_send;
+        delete[]buff_send;
+      
     }
-    delete[]buff_send;
+    Sleep(2000);
     in_send.close();
     cout << "Client download file successful!\n";
     return true;
