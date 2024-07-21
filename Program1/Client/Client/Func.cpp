@@ -60,7 +60,7 @@ void ShowCur(bool CursorVisibility)
 	SetConsoleCursorInfo(handle, &cursor);
 }
 void SignalCallBack(int signum) {
-	cout << "Caught signal " << signum << endl;
+	cout << "\n\n\t\t\t\tCaught signal " << signum << endl;
 
 	exit(signum);
 }
