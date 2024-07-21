@@ -54,6 +54,7 @@ int main()
                 cout << endl;
                 ReceiveInfoAllFileFromServer(ref(client)); 
                 signal(SIGINT, SignalCallBack);
+                COORD cursorPos = getCoordinate();
                 // ============================================== Duc Tri ====================================================================
 
 
@@ -94,7 +95,7 @@ int main()
                         // ================== Display console percent of file downloading ================
 
                         ReceiveInfo1FileFromServer(ref(client), size_name_file_download, size_file_download, name_file_download);
-                        Receive1FileFromServer(ref(client), name_file_download, size_file_download);
+                        Receive1FileFromServer(ref(client), name_file_download, size_file_download, cursorPos);
                         count_file++;
                     }
                 }

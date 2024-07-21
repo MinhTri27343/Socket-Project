@@ -41,6 +41,18 @@ void createBox(unsigned long long x, unsigned long long y, unsigned long long wi
 	cout << CORNER_RIGHT_BOT;
 
 }
+void deleteBox(unsigned long long x, unsigned long long y, unsigned long long width, unsigned long long height)
+{
+	for (int i = 0; i < height; i++)
+	{
+		gotoxy(x, y + i);
+		for (int j = 0; j < width; j++)
+		{
+			cout << " ";
+		}
+	}
+
+}
 void ShowCur(bool CursorVisibility)
 {
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -90,7 +102,6 @@ bool isFileDownload(string file_check1, string file_check2, string file_name, un
 	ifstream fin(file_check1, ios::binary);
 	if (!fin)
 	{
-		cout << "Read file error\n";
 		return false;
 	}
 	if (byte_size > 0)
@@ -100,7 +111,6 @@ bool isFileDownload(string file_check1, string file_check2, string file_name, un
 		string Check = check;
 		if (Check.find(file_name) != string::npos)
 		{
-			cout << "File is exist \n";
 			fin.close();
 			return false;
 		}
@@ -112,7 +122,6 @@ bool isFileDownload(string file_check1, string file_check2, string file_name, un
 	ifstream in(file_check2, ios::in);
 	if (!in)
 	{
-		cout << "Read file error\n";
 		return false;
 	}
 	string word;
@@ -211,7 +220,7 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 	fout.close();
 	delete[] msg;
 }
-void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned long long size_file_download)
+void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned long long size_file_download, COORD cursorPos)
 {
 	signal(SIGINT, SignalCallBack);
 	string name_file_download_str = name_file_download;
@@ -220,8 +229,10 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	unsigned long long height = 2;
 	unsigned long long byte_sum = size_file_download;
 	unsigned long long coordinate_x = 30;
-	unsigned long long coordinate_y = 4;
+	unsigned long long coordinate_y = cursorPos.Y + 3;
 
+	ShowCur(1);
+	deleteBox(0, coordinate_y, 150, height + 1 );
 	createBox(coordinate_x, coordinate_y, width, height);
 	gotoxy(coordinate_x + 1, coordinate_y + 1);
 	cout << "Downloading " << name_file_download_str << " .... ";
@@ -249,6 +260,8 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 		delete[] read_byte_file_download;
 	
 	}
+	bool isDone = true;
+	client.Send((char*)&isDone, sizeof(isDone));
 	delete[] name_file_download;
 	out.close();
 }
@@ -264,4 +277,23 @@ int NumOfFile(char* c)
 		count++;
 	}
 	return count;
+}
+COORD getCoordinate()
+{
+	// Khởi tạo một cấu trúc CONSOLE_SCREEN_BUFFER_INFO để lưu thông tin về buffer màn hình console
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	// Lấy handle của console output
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD cursorPos;
+	// Kiểm tra xem việc lấy thông tin về buffer màn hình console có thành công hay không
+	if (GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+		// Lấy tọa độ của con trỏ
+		cursorPos = csbi.dwCursorPosition;
+		// In tọa độ ra màn hình
+	}
+	else {
+		std::cerr << "Không thể lấy thông tin về buffer màn hình console." << std::endl;
+	}
+	return cursorPos;
+
 }
