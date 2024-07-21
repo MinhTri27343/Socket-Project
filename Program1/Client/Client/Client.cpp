@@ -41,14 +41,18 @@ int main()
             char ip[100];
             int port;
             client.Create();
-
+            cout << "\t \t \t \t \t  ____ _     ___ _____ _   _ _____ \n";
+            cout << "\t \t \t \t \t / ___| |   |_ _| ____| \\ | |_   _|\n";
+            cout << "\t \t \t \t \t| |   | |    | ||  _| |  \\| | | |  \n";
+            cout << "\t \t \t \t \t| |___| |___ | || |___| |\\  | | |  \n";
+            cout << "\t \t \t \t \t \\____|_____|___|_____|_| \\_| |_|  \n";
             // input
             cout << "Input IP address of server: "; cin >> ip;
             cout << "Input port of server: "; cin >> port;
 
             if (client.Connect(CA2W(ip), port))
             {
-
+                
                 // =============================================== Duc Tri ====================================================================
                 cout << "\nClient has connected to the server";
                 cout << endl;
