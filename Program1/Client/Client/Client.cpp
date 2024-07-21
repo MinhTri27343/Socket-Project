@@ -52,11 +52,11 @@ int main()
 
             if (client.Connect(CA2W(ip), port))
             {
-                
+
                 // =============================================== Duc Tri ====================================================================
                 cout << "\nClient has connected to the server";
                 cout << endl;
-                ReceiveInfoAllFileFromServer(ref(client)); 
+                ReceiveInfoAllFileFromServer(ref(client));
                 signal(SIGINT, SignalCallBack);
                 COORD cursorPos = getCoordinate();
                 // ============================================== Duc Tri ====================================================================
@@ -68,8 +68,8 @@ int main()
                 // ================= Sending file name need to download for server ======================
                 string file_user = "input.txt";
                 string file_name = "text1.txt";
-                unsigned long long size_pre_file = getByteSum(file_user);
-                unsigned long long size_after_file = getByteSum(file_user);
+                unsigned long long size_pre_file = 0;
+                unsigned long long size_after_file = 0;
                 while (true)
                 {
                     string file_check1 = file_user;
@@ -108,7 +108,7 @@ int main()
             // =============================================== Minh tri ====================================================================
             else
             {
-                cout << "\n Unable to connect to the server";
+                cout << "\nUnable to connect to the server";
             }
 
             client.Close();
