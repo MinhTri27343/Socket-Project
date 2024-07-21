@@ -231,7 +231,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	unsigned long long coordinate_x = 30;
 	unsigned long long coordinate_y = cursorPos.Y + 3;
 
-	ShowCur(1);
+	
 	deleteBox(0, coordinate_y, 150, height + 1 );
 	createBox(coordinate_x, coordinate_y, width, height);
 	gotoxy(coordinate_x + 1, coordinate_y + 1);
