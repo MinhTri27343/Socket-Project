@@ -131,7 +131,8 @@ bool Send1FileToClient(CSocket& client, string fileNeedDown)
         delete[]buff_send;
       
     }
-    Sleep(2000);
+    bool isDone = false;
+    client.Receive((char*)&isDone, sizeof(isDone));
     in_send.close();
     cout << "Client download file successful!\n";
     return true;
