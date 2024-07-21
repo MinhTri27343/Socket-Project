@@ -3,7 +3,6 @@
 
 void writeFileRecei(string file_recei, char* buffer_receive)
 {
-
     ofstream out;
     stringstream ss(buffer_receive);
 
@@ -115,21 +114,21 @@ bool Send1FileToClient(CSocket& client, string fileNeedDown)
         char* buff_send = new char[size_buff];
         in_send.read(buff_send, size_buff);
         int byte_read = in_send.gcount();
-      
+
         int byte_send = client.Send(buff_send, byte_read, 0);
         if (byte_send == SOCKET_ERROR) return false;
 
         while (byte_send < byte_read)
         {
             int temp_byte_send;
-            temp_byte_send = client.Send(buff_send + byte_send, byte_read - byte_send, 0) ;
+            temp_byte_send = client.Send(buff_send + byte_send, byte_read - byte_send, 0);
             if (temp_byte_send == SOCKET_ERROR) return false;
-            byte_send = temp_byte_send + byte_send;   
+            byte_send = temp_byte_send + byte_send;
         }
 
         byte_sum += byte_send;
         delete[]buff_send;
-      
+
     }
     bool isDone = false;
     client.Receive((char*)&isDone, sizeof(isDone));
