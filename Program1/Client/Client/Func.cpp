@@ -51,7 +51,6 @@ void deleteBox(unsigned long long x, unsigned long long y, unsigned long long wi
 			cout << " ";
 		}
 	}
-
 }
 void ShowCur(bool CursorVisibility)
 {
@@ -60,8 +59,6 @@ void ShowCur(bool CursorVisibility)
 	SetConsoleCursorInfo(handle, &cursor);
 }
 void SignalCallBack(int signum) {
-	cout << "\n\n\t\t\t\tCaught signal " << signum << endl;
-
 	exit(signum);
 }
 unsigned long long getByteSum(string fileName)
@@ -194,7 +191,7 @@ void ReceiveInfo1FileFromServer(CSocket& client, unsigned long long& size_name_f
 	signal(SIGINT, SignalCallBack);
 	// Ghi nhan so byte cua ten file
 	client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
-	
+
 	name_file_download = new char[size_name_file_download + 1];
 	//Ghi nhan ten file
 	client.Receive(name_file_download, size_name_file_download, 0);
@@ -231,34 +228,32 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	unsigned long long coordinate_x = 30;
 	unsigned long long coordinate_y = cursorPos.Y + 3;
 
-	
-	deleteBox(0, coordinate_y, 150, height + 1 );
+
+	deleteBox(0, coordinate_y, 150, height + 1);
 	createBox(coordinate_x, coordinate_y, width, height);
 	gotoxy(coordinate_x + 1, coordinate_y + 1);
 	cout << "Downloading " << name_file_download_str << " .... ";
 
 
 	ofstream out;
-	out.open(name_file_download_str.c_str(), ios::app | ios::out | ios::binary);
+	out.open(name_file_download_str.c_str(), ios::trunc | ios::out | ios::binary);
 	unsigned long long total_byte_curr = 0;
 	unsigned long long byte_read = 20480;
 
 	while (total_byte_curr < size_file_download)
 	{
-
 		// receive byte of file download from server  
 		char* read_byte_file_download = new char[byte_read];
 		int byte_rec = client.Receive(read_byte_file_download, byte_read, 0);
 		out.write(read_byte_file_download, byte_rec);
 		total_byte_curr = total_byte_curr + byte_rec;
-		
+
 		//=========================================================
 
 		gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
 		cout << (total_byte_curr * 100) / byte_sum << "%";
-		
+		cout << endl << endl;
 		delete[] read_byte_file_download;
-	
 	}
 	bool isDone = true;
 	client.Send((char*)&isDone, sizeof(isDone));
