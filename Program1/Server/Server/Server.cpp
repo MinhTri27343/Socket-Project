@@ -1,4 +1,4 @@
-﻿// Sever.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Sever.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include "pch.h"
@@ -38,27 +38,36 @@ int main()
             sever.Create(1234);
             cout << "Server is listening!\n";
             sever.Listen();
-            int n;
+            CSocket client;
+            /*int n;
             cout << "Input the number of clients: ";
             cin >> n;
-            CSocket* client = new CSocket[n];
-            for (int i = 0; i < n; i++)
+            CSocket* client = new CSocket[n];*/
+            /*for (int i = 0; i < n; i++)
+            {*/
+            while (true)
             {
-                if (sever.Accept(client[i]))
+                if (sever.Accept(client))
                 {
                     cout << "Connect is succesful!\n";
 
                     //===========================================Sent file list_file=============================================================
-                    if (SendInfoAllFileToClient(ref(client[i])) == false)
+                    if (SendInfoAllFileToClient(ref(client)) == false)
+                    {
+                        cout << "Disconnected from client" << endl;
                         continue;
+                    }
                     //===========================================Sent file list_file=============================================================
 
                     //============================================Receive list file need download=====================================================
                     while (true)
                     {
                         ifstream in;
-                        if (ReadFileNeedDownFromClient(ref(client[i])) == false)
+                        if (ReadFileNeedDownFromClient(ref(client)) == false)
+                        {
+                            cout << "Disconnected from client" << endl;
                             break;
+                        }
                         cout << "Received file need to download!\n";
                         //===========Send file ==============================================================
                         string file_recei = "list_file_recei.txt";
@@ -72,17 +81,29 @@ int main()
                         else
                         {
                             string temp_2;
+                            bool isBreak = false;
                             while (getline(in, temp_2, '\n'))
                             {
-                                if (SendInfo1FileToClient(ref(client[i]), temp_2) == false)//đúng rồi khỏi sửa
+                                if (SendInfo1FileToClient(ref(client), temp_2) == false)
+                                {
+                                    cout << "Disconnected from client" << endl;
+                                    isBreak = true;
                                     break;
-                                if (Send1FileToClient(ref(client[i]), temp_2) == false)
+                                }
+                                if (Send1FileToClient(ref(client), temp_2) == false)
+                                {
+                                    cout << "Disconnected from client" << endl;
+                                    isBreak = true;
                                     break;
+                                }
                             }
                             in.close();
+                            if (isBreak == true)
+                                break;
                             //===========Send file ============================================================
                         }
                     }
+                    client.Close();
                     //============================================Receive list file need download=====================================================
                 }
                 else
@@ -90,6 +111,7 @@ int main()
                     cout << "Connect is falled!\n";
                 }
             }
+            /*}*/
             // =============================================================
         }
     }
