@@ -43,7 +43,7 @@ unsigned long long readSizeFile(string file_name)
 }
 bool ReadFileNeedDownFromClient(CSocket& client)
 {
-    unsigned long long len = 0;
+    int len = 0;
     if (client.Receive((char*)&len, sizeof(len), 0) == SOCKET_ERROR)//Receives length of string
         return false;
     char* buffer_receive = new char[len + 1];
@@ -62,7 +62,7 @@ bool SendInfo1FileToClient(CSocket& client, string temp_2)
 {
     cout << "Sending file " << temp_2 << " for client!\n";
     unsigned long long size_file = readSizeFile(temp_2);
-    unsigned long long size_tmp2 = temp_2.length();
+    int size_tmp2 = temp_2.length();
     if (client.Send((char*)&size_tmp2, sizeof(size_tmp2), 0) == SOCKET_ERROR)//Send length of name file
         return false;
     char* name_file = new char[size_tmp2 + 1];
@@ -79,7 +79,7 @@ bool SendInfoAllFileToClient(CSocket& client)
 {
     string list_file = "list_file.txt";
     cout << "Sending list file!\n";
-    unsigned long long size_list_file = readSizeFile(list_file);
+    int size_list_file = readSizeFile(list_file);
     if (client.Send((char*)&size_list_file, sizeof(size_list_file), 0) == SOCKET_ERROR)
         return false;
     ifstream in;
