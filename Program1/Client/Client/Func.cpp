@@ -7,7 +7,7 @@
 #define CORNER_LEFT_BOT char(192)
 #define CORNER_RIGHT_BOT char(217)
 #define CORNER_RIGHT_TOP char(191)
-void gotoxy(unsigned long long x, unsigned long long y)
+void gotoxy(int  x, int  y)
 {
 	static HANDLE h = NULL;
 	if (!h)
@@ -15,7 +15,7 @@ void gotoxy(unsigned long long x, unsigned long long y)
 	COORD c = { x, y };
 	SetConsoleCursorPosition(h, c);
 }
-void createBox(unsigned long long x, unsigned long long y, unsigned long long width, unsigned long long height)
+void createBox(int  x, int  y, int  width, int  height)
 {
 	for (int i = 0; i < width; i++)
 	{
@@ -41,7 +41,7 @@ void createBox(unsigned long long x, unsigned long long y, unsigned long long wi
 	cout << CORNER_RIGHT_BOT;
 
 }
-void deleteBox(unsigned long long x, unsigned long long y, unsigned long long width, unsigned long long height)
+void deleteBox(int  x, int  y, int  width, int  height)
 {
 	for (int i = 0; i < height; i++)
 	{
@@ -186,7 +186,7 @@ void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long l
 	}
 	in.close();
 }
-void ReceiveInfo1FileFromServer(CSocket& client, unsigned long long& size_name_file_download, unsigned long long& size_file_download, char*& name_file_download)
+void ReceiveInfo1FileFromServer(CSocket& client, int& size_name_file_download, unsigned long long& size_file_download, char*& name_file_download)
 {
 	signal(SIGINT, SignalCallBack);
 	// Ghi nhan so byte cua ten file
@@ -205,7 +205,7 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 	string file_name = "text1.txt";
 	ofstream fout;
 	fout.open(file_name, ios::out | ios::binary);
-	unsigned long long byte;
+	int  byte;
 	client.Receive((char*)&byte, sizeof(byte), 0);
 	char* msg = new char[byte + 1];
 	client.Receive(msg, byte, 0);
@@ -222,11 +222,11 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	signal(SIGINT, SignalCallBack);
 	string name_file_download_str = name_file_download;
 	ShowCur(0);
-	unsigned long long width = 26 + name_file_download_str.size();
-	unsigned long long height = 2;
-	unsigned long long byte_sum = size_file_download;
-	unsigned long long coordinate_x = 30;
-	unsigned long long coordinate_y = cursorPos.Y + 3;
+	int  width = 26 + name_file_download_str.size();
+	int  height = 2;
+	unsigned long long  byte_sum = size_file_download;
+	int  coordinate_x = 30;
+	int  coordinate_y = cursorPos.Y + 3;
 
 
 	deleteBox(0, coordinate_y, 150, height + 1);
@@ -236,9 +236,15 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 
 
 	ofstream out;
-	out.open(name_file_download_str.c_str(), ios::trunc | ios::out | ios::binary);
+	out.open(("output/" + name_file_download_str).c_str(), ios::trunc | ios::out | ios::binary);
+	if (!out)
+	{
+		cout << "Not open file\n";
+		return;
+	}
+	
 	unsigned long long total_byte_curr = 0;
-	unsigned long long byte_read = 20480;
+	int  byte_read = 20480;
 
 	while (total_byte_curr < size_file_download)
 	{

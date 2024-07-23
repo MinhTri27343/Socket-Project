@@ -90,7 +90,7 @@ int main()
                     // Initialize
                     while (count_file != num_file)
                     {
-                        unsigned long long size_name_file_download = 0;
+                        int size_name_file_download = 0;
                         unsigned long long size_file_download = 0;
                         char* name_file_download = NULL;
 
