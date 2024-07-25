@@ -30,7 +30,7 @@ void checkInput(vector<File>& files)
 {
     ifstream fin;
     vector<string> list_file = readListFile();
-
+    vector<string> file_need;
     int num_of_line = 0;
 
     while (true)
@@ -66,9 +66,9 @@ void checkInput(vector<File>& files)
                 continue;
             }
             bool is_exist = false;
-            for (int i = 0; i < files.size(); i++)
+            for (int i = 0; i < file_need.size(); i++)
             {
-                if (temp_2 == files[i].file_name)
+                if (temp_2 == file_need[i])
                 {
                     cout << "File " << temp_2 << " is exist !\n";
                     is_exist = true;
@@ -86,7 +86,7 @@ void checkInput(vector<File>& files)
             if (temp_2 == "NORMAL") file_new.priority = 1;
             else if (temp_2 == "HIGHT") file_new.priority = 4;
             else if (temp_2 == "CRITICAL") file_new.priority = 10;
-
+            file_need.push_back(file_new.file_name);
             files.push_back(file_new);
         }
 
