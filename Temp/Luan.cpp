@@ -4,39 +4,7 @@
 void checkInput(vector<File>& files)
 {
     ifstream fin;
-    fin.open("input.txt");
     int num_of_file = 0;
-    if (!fin.is_open())
-    {
-        cout << "Can not open file input.txt.\n";
-        return;
-    }
-    string temp;
-    while (!fin.eof())
-    {
-        getline(fin, temp, '\n');
-        if (temp == "")continue;
-        stringstream ss(temp);
-        File file_new;
-        string temp_2;
-        getline(ss, temp_2, ' ');
-
-        file_new.file_name = new char[temp_2.length() + 1];
-        strcpy_s(file_new.file_name, temp_2.length() + 1, temp_2.c_str());
-        file_new.file_name[temp_2.length()] = '\0';
-        getline(ss, temp_2, '\n');
-
-        if (temp_2 == "NORMAL") file_new.priority = 1;
-        else if (temp_2 == "HIGHT") file_new.priority = 4;
-        else if (temp_2 == "CRITICAL") file_new.priority = 10;
-
-        files.push_back(file_new);
-        num_of_file++;
-
-    }
-
-    fin.close();
-    Sleep(2000);
 
 
     while (true)
