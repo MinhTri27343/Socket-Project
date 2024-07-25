@@ -1,11 +1,37 @@
 
 
 //Thread
+vector<string> readListFile()
+{
+    ifstream fin;
+    vector<string> list_file;
+
+    fin.open("list_file.txt");
+    if (!fin.is_open())
+    {
+        cout << "Can not open file list_file.txt\n";
+        return list_file;
+    }
+    else
+    {
+        string temp;
+        while (!fin.eof())
+        {
+            getline(fin, temp, '\n');
+            stringstream ss(temp);
+            string temp_2;
+            getline(ss, temp_2, ' ');
+            list_file.push_back(temp_2);
+        }
+        fin.close();
+    }
+}
 void checkInput(vector<File>& files)
 {
     ifstream fin;
-    int num_of_file = 0;
+    vector<string> list_file = readListFile();
 
+    int num_of_line = 0;
 
     while (true)
     {
@@ -17,7 +43,7 @@ void checkInput(vector<File>& files)
         }
         string temp;
         int cnt = 0;
-        while (cnt++ < num_of_file)
+        while (cnt++ < num_of_line)
         {
             getline(fin, temp, '\n');
         }
@@ -26,9 +52,31 @@ void checkInput(vector<File>& files)
             getline(fin, temp, '\n');
             if (temp == "")continue;
             stringstream ss(temp);
-            File file_new;
             string temp_2;
             getline(ss, temp_2, ' ');
+            num_of_line++;
+            bool is_have = false;
+            for (int i = 0; i < list_file.size(); i++)
+            {
+                if (list_file[i] == temp_2)is_have = true;
+            }
+            if (!is_have)
+            {
+                cout << "Dont have file " << temp_2 << "\n";
+                continue;
+            }
+            bool is_exist = false;
+            for (int i = 0; i < files.size(); i++)
+            {
+                if (temp_2 == files[i].file_name)
+                {
+                    cout << "File " << temp_2 << " is exist !\n";
+                    is_exist = true;
+                    break;
+                }
+            }
+            if (is_exist)continue;
+            File file_new;
 
             file_new.file_name = new char[temp_2.length() + 1];
             strcpy_s(file_new.file_name, temp_2.length() + 1, temp_2.c_str());
@@ -40,7 +88,6 @@ void checkInput(vector<File>& files)
             else if (temp_2 == "CRITICAL") file_new.priority = 10;
 
             files.push_back(file_new);
-            num_of_file++;
         }
 
         fin.close();
@@ -49,9 +96,6 @@ void checkInput(vector<File>& files)
 
 
 }
-
-
-
 //Display to screen
 //
 //void gotoxy(unsigned long long x, unsigned long long y)
