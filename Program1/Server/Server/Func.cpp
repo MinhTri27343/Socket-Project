@@ -86,7 +86,7 @@ bool SendInfoAllFileToClient(CSocket& client)
     in.open(list_file, ios::binary);
     if (!in.is_open())
     {
-        cout << "Send list file falled!\n";
+        cout << "Sending list file falled!\n";
         return true;
     }
     else
@@ -106,7 +106,6 @@ bool Send1FileToClient(CSocket& client, string fileNeedDown)
     ifstream in_send;
     in_send.open(fileNeedDown.c_str(), ios::binary);
     int size_buff = 20480;
-    unsigned long long total_byte = readSizeFile(fileNeedDown);
     unsigned long long byte_sum = 0;
 
     while (!in_send.eof())
