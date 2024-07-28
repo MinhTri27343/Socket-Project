@@ -7,6 +7,7 @@
 #define CORNER_LEFT_BOT char(192)
 #define CORNER_RIGHT_BOT char(217)
 #define CORNER_RIGHT_TOP char(191)
+int cnt_file = 0;
 void gotoxy(int  x, int  y)
 {
 	static HANDLE h = NULL;
@@ -39,18 +40,32 @@ void createBox(int  x, int  y, int  width, int  height)
 	cout << CORNER_LEFT_BOT;
 	gotoxy(x + width, y + height);
 	cout << CORNER_RIGHT_BOT;
-
 }
-void deleteBox(int  x, int  y, int  width, int  height)
+void deleteBox(int x, int y, int width, int height)
 {
-	for (int i = 0; i < height; i++)
+	/*for (int i = 0; i < height; i++)
 	{
 		gotoxy(x, y + i);
 		for (int j = 0; j < width; j++)
 		{
 			cout << " ";
 		}
+	}*/
+	//Tri
+	for (int i = 0; i < width; i++)
+	{
+		gotoxy(x + i, y + height);
+		cout << " ";
 	}
+	for (int i = 0; i < height; i++)
+	{
+		gotoxy(x, y + i);
+		cout << " ";
+		gotoxy(x + width, y + i);
+		cout << " ";
+	}
+
+
 }
 void ShowCur(bool CursorVisibility)
 {
@@ -63,7 +78,6 @@ void SignalCallBack(int signum) {
 }
 unsigned long long getByteSum(string fileName)
 {
-	signal(SIGINT, SignalCallBack);
 	ifstream in(fileName, ios::binary);
 	in.seekg(0, ios::end);
 	unsigned long long byte_sum = in.tellg();
@@ -151,9 +165,8 @@ char* fileDownload(char* Check, string file_check1, string file_check2, unsigned
 	strcpy_s(a, save.size() + 1, save.c_str());
 	return a;
 }
-void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long long& size_pre_file, unsigned long long& size_after_file, string file_check1, string file_check2, bool& checkIsExist, char*& send)
+void SendFileNeedDownToServer(CSocket& client, string file_user, int& size_pre_file, int& size_after_file, string file_check1, string file_check2, bool& checkIsExist, char*& send)
 {
-	signal(SIGINT, SignalCallBack);
 	ifstream in;
 	in.open(file_user, ios::in | ios::binary);
 	if (!in.is_open())
@@ -163,14 +176,14 @@ void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long l
 	size_after_file = getByteSum(file_user);
 	if (size_after_file > size_pre_file) //Nếu có cập nhật mới
 	{
-		unsigned long long byte_size = size_after_file - size_pre_file;
+		int byte_size = size_after_file - size_pre_file;
 		in.seekg(size_pre_file, ios::beg);
 		char* information_file = new char[byte_size + 1];
 		in.read(information_file, byte_size);
 		information_file[byte_size] = '\0';
 		char* temp = normalizeChar(information_file);
 		send = fileDownload(temp, file_check1, file_check2, size_pre_file);
-		unsigned long long size_send = strlen(send);
+		int size_send = strlen(send);
 		if (size_send > 0)
 		{
 			client.Send((char*)&size_send, sizeof(size_send), 0);
@@ -188,7 +201,6 @@ void SendFileNeedDownToServer(CSocket& client, string file_user, unsigned long l
 }
 void ReceiveInfo1FileFromServer(CSocket& client, int& size_name_file_download, unsigned long long& size_file_download, char*& name_file_download)
 {
-	signal(SIGINT, SignalCallBack);
 	// Ghi nhan so byte cua ten file
 	client.Receive((char*)&size_name_file_download, sizeof(size_name_file_download), 0);
 
@@ -202,10 +214,10 @@ void ReceiveInfo1FileFromServer(CSocket& client, int& size_name_file_download, u
 }
 void ReceiveInfoAllFileFromServer(CSocket& client)
 {
-	string file_name = "text1.txt";
+	string file_name = "file.txt";
 	ofstream fout;
 	fout.open(file_name, ios::out | ios::binary);
-	int  byte;
+	int byte;
 	client.Receive((char*)&byte, sizeof(byte), 0);
 	char* msg = new char[byte + 1];
 	client.Receive(msg, byte, 0);
@@ -219,21 +231,18 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 }
 void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned long long size_file_download, COORD cursorPos)
 {
-	signal(SIGINT, SignalCallBack);
 	string name_file_download_str = name_file_download;
 	ShowCur(0);
-	int  width = 26 + name_file_download_str.size();
-	int  height = 2;
-	unsigned long long  byte_sum = size_file_download;
-	int  coordinate_x = 30;
-	int  coordinate_y = cursorPos.Y + 3;
+	int width = 26 + 20;
+	int height = 2 + cnt_file;
+	unsigned long long byte_sum = size_file_download;
+	int coordinate_x = 30;
+	int coordinate_y = cursorPos.Y + 3;
 
-
-	deleteBox(0, coordinate_y, 150, height + 1);
+	deleteBox(0, coordinate_y, 150, height - 1);
 	createBox(coordinate_x, coordinate_y, width, height);
-	gotoxy(coordinate_x + 1, coordinate_y + 1);
+	gotoxy(coordinate_x + 1, coordinate_y + 1 + cnt_file);
 	cout << "Downloading " << name_file_download_str << " .... ";
-
 
 	ofstream out;
 	out.open(("output/" + name_file_download_str).c_str(), ios::trunc | ios::out | ios::binary);
@@ -244,7 +253,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	}
 	
 	unsigned long long total_byte_curr = 0;
-	int  byte_read = 20480;
+	int byte_read = 20480;
 
 	while (total_byte_curr < size_file_download)
 	{
@@ -256,11 +265,12 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 
 		//=========================================================
 
-		gotoxy(coordinate_x + 20 + name_file_download_str.size(), coordinate_y + 1);
+		gotoxy(coordinate_x + 35, coordinate_y + 1 + cnt_file);
 		cout << (total_byte_curr * 100) / byte_sum << "%";
 		cout << endl << endl;
 		delete[] read_byte_file_download;
 	}
+	cnt_file++;
 	bool isDone = true;
 	client.Send((char*)&isDone, sizeof(isDone));
 	delete[] name_file_download;
@@ -268,7 +278,6 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 }
 int NumOfFile(char* c)
 {
-	signal(SIGINT, SignalCallBack);
 	string str = c;
 	int count = 0;
 	stringstream ss(str);
@@ -281,20 +290,16 @@ int NumOfFile(char* c)
 }
 COORD getCoordinate()
 {
-	// Khởi tạo một cấu trúc CONSOLE_SCREEN_BUFFER_INFO để lưu thông tin về buffer màn hình console
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	// Lấy handle của console output
+
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD cursorPos;
-	// Kiểm tra xem việc lấy thông tin về buffer màn hình console có thành công hay không
+
 	if (GetConsoleScreenBufferInfo(hConsole, &csbi)) {
-		// Lấy tọa độ của con trỏ
 		cursorPos = csbi.dwCursorPosition;
-		// In tọa độ ra màn hình
 	}
 	else {
-		std::cerr << "Không thể lấy thông tin về buffer màn hình console." << std::endl;
+		cerr << "Can't get information for buffer of console." << endl;
 	}
 	return cursorPos;
-
 }
