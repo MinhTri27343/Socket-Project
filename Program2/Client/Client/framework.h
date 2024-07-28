@@ -21,3 +21,12 @@
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 #include <iostream>
+#include<afxsock.h>
+#include<fstream>
+#include<vector>
+#include<string>
+#include<sstream>
+#include<thread>
+#include"Func.h"
+#include<signal.h>
+#include<mutex>
