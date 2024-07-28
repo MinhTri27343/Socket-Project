@@ -4,7 +4,8 @@
 #include "pch.h"
 #include "framework.h"
 #include "Server.h"
-
+#include"Func.h"
+//#pragma pack(push, 1)
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -34,6 +35,31 @@ int main()
         else
         {
             // TODO: code your application's behavior here.
+            AfxSocketInit(NULL);
+            CSocket sever;
+            sever.Create(1234);
+            cout << "Server is listening!\n";
+            sever.Listen();
+            CSocket client;
+            if (sever.Accept(client))
+            {
+                cout << "Connect is successful!\n";
+          
+                if (SendInfoAllFileToClient(ref(client)) == SOCKET_ERROR)
+                {
+                    return 0;
+                }
+                vector<pair<ifstream, File>> v;
+                vector<File> tmp;
+                while (true)
+                {
+                    SendFileDownloadToClient(ref(client), v);
+                }
+            }
+            else
+            {
+                cout << "Connect is falled!\n";
+            }
         }
     }
     else
