@@ -1,4 +1,4 @@
-﻿// Client.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Client.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include "pch.h"
@@ -67,9 +67,9 @@ int main()
 
                 // ================= Sending file name need to download for server ======================
                 string file_user = "input.txt";
-                string file_name = "text1.txt";
-                unsigned long long size_pre_file = 0;
-                unsigned long long size_after_file = 0;
+                string file_name = "file.txt";
+                int size_pre_file = 0;
+                int size_after_file = 0;
                 while (true)
                 {
                     string file_check1 = file_user;
