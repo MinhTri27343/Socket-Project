@@ -39,17 +39,11 @@ int main()
             cout << "Server is listening!\n";
             sever.Listen();
             CSocket client;
-            /*int n;
-            cout << "Input the number of clients: ";
-            cin >> n;
-            CSocket* client = new CSocket[n];*/
-            /*for (int i = 0; i < n; i++)
-            {*/
             while (true)
             {
                 if (sever.Accept(client))
                 {
-                    cout << "Connect is succesful!\n";
+                    cout << "Connect is successful!\n";
 
                     //===========================================Sent file list_file=============================================================
                     if (SendInfoAllFileToClient(ref(client)) == false)
