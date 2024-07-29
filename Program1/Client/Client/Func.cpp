@@ -154,10 +154,16 @@ char* fileDownload(char* Check, string file_check1, string file_check2, unsigned
 	stringstream ss(check);
 	string word;
 	string save = "";
+	vector<string> checkDuplicate;
 	while (ss >> word)
 	{
 		if (isFileDownload(file_check1, file_check2, word, byte_size))
 		{
+			if (!checkDuplicate.empty())
+			{
+				if (find(checkDuplicate.begin(), checkDuplicate.end(), word) != checkDuplicate.end()) continue;
+			}
+			checkDuplicate.push_back(word);
 			save += word + " ";
 		}
 	}
