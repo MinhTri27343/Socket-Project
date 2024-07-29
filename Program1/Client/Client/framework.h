@@ -30,5 +30,6 @@
 #include<sstream>
 #include<signal.h>
 #include<fstream>
+#include<vector>
 // using namespace std
 using namespace std;
