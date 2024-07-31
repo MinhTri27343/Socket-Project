@@ -8,6 +8,7 @@
 #define CORNER_RIGHT_BOT char(217)
 #define CORNER_RIGHT_TOP char(191)
 int cnt_file = 0;
+int max_length_file = 0;
 void gotoxy(int  x, int  y)
 {
 	static HANDLE h = NULL;
@@ -43,15 +44,6 @@ void createBox(int  x, int  y, int  width, int  height)
 }
 void deleteBox(int x, int y, int width, int height)
 {
-	/*for (int i = 0; i < height; i++)
-	{
-		gotoxy(x, y + i);
-		for (int j = 0; j < width; j++)
-		{
-			cout << " ";
-		}
-	}*/
-	//Tri
 	for (int i = 0; i < width; i++)
 	{
 		gotoxy(x + i, y + height);
@@ -64,8 +56,6 @@ void deleteBox(int x, int y, int width, int height)
 		gotoxy(x + width, y + i);
 		cout << " ";
 	}
-
-
 }
 void ShowCur(bool CursorVisibility)
 {
@@ -239,15 +229,16 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 {
 	string name_file_download_str = name_file_download;
 	ShowCur(0);
-	int width = 26 + 20;
 	int height = 2 + cnt_file;
 	unsigned long long byte_sum = size_file_download;
 	int coordinate_x = 30;
 	int coordinate_y = cursorPos.Y + 3;
+	deleteBox(coordinate_x, coordinate_y, 30 + max_length_file, height - 1);
 
-	deleteBox(0, coordinate_y, 150, height - 1);
+	max_length_file = max(max_length_file, name_file_download_str.length());
+	int width = 30 + max_length_file;
 	createBox(coordinate_x, coordinate_y, width, height);
-	gotoxy(coordinate_x + 1, coordinate_y + 1 + cnt_file);
+	gotoxy(coordinate_x + 2, coordinate_y + 1 + cnt_file);
 	cout << "Downloading " << name_file_download_str << " .... ";
 
 	ofstream out;
@@ -271,7 +262,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 
 		//=========================================================
 
-		gotoxy(coordinate_x + 35, coordinate_y + 1 + cnt_file);
+		gotoxy(coordinate_x + max_length_file + 25, coordinate_y + 1 + cnt_file);
 		cout << (total_byte_curr * 100) / byte_sum << "%";
 		cout << endl << endl;
 		delete[] read_byte_file_download;
