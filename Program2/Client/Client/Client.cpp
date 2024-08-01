@@ -36,6 +36,7 @@ int main()
         }
         else
         {
+            //ShowCur(0);
             // TODO: code your application's behavior here.
             AfxSocketInit(NULL);
             CSocket client;
@@ -64,10 +65,13 @@ int main()
                 //Thread check 2s
                 thread check_2s(checkInput, ref(files), list_file);
                 check_2s.detach();
+                int width_max = 0; //length max of name file
+                int number_of_file = 0;
 
                 while (true)
                 {
-                    ReceiveFileDownloadToClient(ref(client), v, files);
+                    displayPercent(number_of_file, files, width_max);
+                    ReceiveFileDownloadToClient(ref(client), v, files, width_max);
                 }
                 
             }
