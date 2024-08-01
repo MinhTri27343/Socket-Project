@@ -3,10 +3,104 @@
 #include"framework.h"
 using namespace std;
 
+#define HORIZONTAL_LINE char(196)
+#define VERTICAL_LINE char(179)
+#define CORNER_LEFT_TOP char(218)
+#define CORNER_LEFT_BOT char(192)
+#define CORNER_RIGHT_BOT char(217)
+#define CORNER_RIGHT_TOP char(191)
+
 int size_pre = 0;
 void SignalCallBack(int signum) {
     exit(signum);
 }
+void signal_callback_handler(int signum) {
+    cout << "Caught signal " << signum << endl;
+    // Terminate program
+    exit(signum);
+}
+//=======================Display=============================================
+void gotoxy(int x, int y)
+{
+    static HANDLE h = NULL;
+    if (!h)
+        h = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD c = { x, y };
+    SetConsoleCursorPosition(h, c);
+}
+void createBox(int  x, int  y, int  width, int  height)
+{
+    for (int i = 0; i < width + 1; i++)
+    {
+        gotoxy(x + i + 1, y);
+        cout << HORIZONTAL_LINE;
+        gotoxy(x + i + 1, y + height + 1);
+        cout << HORIZONTAL_LINE;
+    }
+    for (int j = 0; j < height + 1; j++)
+    {
+        gotoxy(x, y + j + 1);
+        cout << VERTICAL_LINE;
+        gotoxy(x + width + 1, y + j + 1);
+        cout << VERTICAL_LINE;
+    }
+    gotoxy(x, y);
+    cout << CORNER_LEFT_TOP;
+    gotoxy(x + width + 1, y);
+    cout << CORNER_RIGHT_TOP;
+    gotoxy(x, y + height + 1);
+    cout << CORNER_LEFT_BOT;
+    gotoxy(x + width + 1, y + height + 1);
+    cout << CORNER_RIGHT_BOT;
+}
+void deleteContent(int x, int y, int width, int height)
+{
+  
+    for (int i = x; i <x + width + 1; i++)
+    {
+       
+        for (int j = y; j < y + height + 1; j++)
+        {
+            gotoxy(i , j );
+            cout << " ";
+        }
+    }
+  
+    
+}
+void ShowCur(bool CursorVisibility)
+{
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursor = { 1, CursorVisibility };
+    SetConsoleCursorInfo(handle, &cursor);
+}
+void displayPercent(int &number_of_file, vector<File> files, int &width_max)
+{
+    if (number_of_file != files.size())
+    {
+        deleteContent(40, 10, width_max + 26, files.size());
+
+        for (int i = 0; i < files.size(); i++)
+        {
+
+            int len = strlen(files[i].file_name);
+            if (width_max < len) width_max = len;
+        }
+
+
+        createBox(40, 10, width_max + 24, files.size());
+        for (int i = 0; i < files.size(); i++)
+        {
+            gotoxy(40 + 1, 11 + i);
+            cout << "Downloading " << files[i].file_name << " ...";
+        }
+        
+        number_of_file = files.size();
+
+    }
+}
+//======================= End Display=============================================
+
 void ReceiveInfoAllFileFromServer(CSocket& client)
 {
     string file_name = "file.txt";
@@ -23,15 +117,9 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 
     fout.close();
     delete[] msg;
+    cout << "\n";
 }
-void gotoxy(unsigned long long x, unsigned long long y)
-{
-    static HANDLE h = NULL;
-    if (!h)
-        h = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD c = { x, y };
-    SetConsoleCursorPosition(h, c);
-}
+
 void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
 {
     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
@@ -74,14 +162,36 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
             client.Send(tmp[i].file_name, byte_file_name, 0);
             client.Receive((char*)&(tmp[i].size_file), sizeof(tmp[i].size_file), 0);
             ofstream fout(tmp[i].file_name, ios::binary | ios::trunc);
-            v.push_back({ move(fout), tmp[i] });
+            
+            File temp;
+            temp.current_size_file = tmp[i].current_size_file;
+
+            int len = strlen(tmp[i].file_name);
+            temp.file_name = new char[len + 1];
+            strcpy_s(temp.file_name,len + 1, tmp[i].file_name);
+            temp.file_name[len] = '\0';
+
+            temp.priority = tmp[i].priority;
+            temp.size_file = tmp[i].size_file;
+            temp.size_file_name = tmp[i].size_file_name;
+           
+            v.push_back({ move(fout), temp });
         }
         num_of_file--;
     }
 }
-void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp)
+void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp, int width_max)
 {
     checkIsUpdate(ref(client), v, tmp);
+    for (int i = 0; i < tmp.size(); i++)
+    {
+        if (tmp[i].current_size_file == tmp[i].size_file)
+        {
+            gotoxy(40 + width_max + 20, 11 + i);
+            cout << "100%";
+        }
+
+    }
     for (int i = 0; i < v.size(); i++)
     {
         for (int j = 0; j < v[i].second.priority; j++)
@@ -89,22 +199,38 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
             //Todo: receive 1 chunk 1024 byte to client
             Receive1Chunk(client, v, i);
             // ============= Display DownLoad ========================
-            gotoxy(0, 25 + i);
-            cout << v[i].second.file_name << " + Size: " << v.size() << "    ";
-            cout << (v[i].second.current_size_file) * 100 / v[i].second.size_file << "%" << endl;
+
+            for (int k = 0; k < tmp.size(); k++)
+            {
+                
+                gotoxy(40 + width_max + 20, 11 + k);
+
+                if (strcmp(v[i].second.file_name, tmp[k].file_name) == 0 )
+                {
+                    cout << (v[i].second.current_size_file) * 100 / v[i].second.size_file << "%" << endl;
+                    break;
+                }
+               
+            }
+            // ============= Display DownLoad ========================
+
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
-                gotoxy(0, 25 + i);
+                for (int k = 0; k < tmp.size(); k++)
+                {
+                    if (strcmp(v[i].second.file_name, tmp[k].file_name) == 0)
+                    {
+                        tmp[k].current_size_file = tmp[k].size_file;
+                        break;
+                    }
+                }
                 v[i].first.close();
                 delete[] v[i].second.file_name;
-                v[i].second.file_name = NULL;
-                //delete[] v[i].second.file_name;
+                v[i].second.file_name = NULL;         
                 v.erase(v.begin() + i);
-                cout << 100 << "%";
                 i--;
                 break;
             }
-            // ============= Display DownLoad ========================
         }
         bool isDone = true;
         client.Send((char*)&isDone, sizeof(isDone), 0);
@@ -122,7 +248,7 @@ vector<string> readListFile()
     fin.open("file.txt");
     if (!fin.is_open())
     {
-        cout << "Can not open file list_file.txt\n";
+        cout << "\nCan not open file list_file.txt\n";
         return list_file;
     }
     else
@@ -150,7 +276,7 @@ void checkInput(vector<File>& files, vector<string>list_file)
         fin.open("input.txt");
         if (!fin.is_open())
         {
-            cout << "Can not open file input.txt.\n";
+            cout << "\nCan not open file input.txt.\n";
             return;
         }
         string temp;
@@ -174,7 +300,7 @@ void checkInput(vector<File>& files, vector<string>list_file)
             }
             if (!is_have)
             {
-                cout << "Dont have file " << temp_2 << "\n";
+                cout << "\nDont have file " << temp_2 << "\n";
                 continue;
             }
             bool is_exist = false;
@@ -182,22 +308,29 @@ void checkInput(vector<File>& files, vector<string>list_file)
             {
                 if (temp_2 == file_need[i])
                 {
-                    cout << "File " << temp_2 << " is exist !\n";
+                    cout << "\nFile " << temp_2 << " is exist !\n";
                     is_exist = true;
                     break;
                 }
             }
             if (is_exist)continue;
+            string temp_3;
+            getline(ss, temp_3, '\n');
+            if (temp_3 != "NORMAL" && temp_3 != "HIGH" && temp_3 != "CRITICAL")
+            {
+                cout << "\nPlease, enter priority !\n";
+                continue;
+            }
+          
             File file_new;
 
             file_new.file_name = new char[temp_2.length() + 1];
             strcpy_s(file_new.file_name, temp_2.length() + 1, temp_2.c_str());
             file_new.file_name[temp_2.length()] = '\0';
-            getline(ss, temp_2, '\n');
 
-            if (temp_2 == "NORMAL") file_new.priority = 1;
-            else if (temp_2 == "HIGH") file_new.priority = 4;
-            else if (temp_2 == "CRITICAL") file_new.priority = 10;
+            if (temp_3 == "NORMAL") file_new.priority = 1;
+            else if (temp_3 == "HIGH") file_new.priority = 4;
+            else if (temp_3 == "CRITICAL") file_new.priority = 10;
             file_need.push_back(file_new.file_name);
             files.push_back(file_new);
         }
