@@ -3,8 +3,7 @@
 #include"framework.h"
 using namespace std;
 
-std::mutex mtx;
-
+int size_pre = 0;
 void SignalCallBack(int signum) {
     exit(signum);
 }
@@ -53,14 +52,20 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
 }
 void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp)
 {
-    bool isChange = false;
-    if (tmp.size() > 0)
+    int num_of_file = 0;
+    int size_cur = tmp.size();
+    if (size_cur - size_pre > 0)
     {
-        isChange = true;
-        client.Send((char*)&isChange, sizeof(isChange), 0);
-        int num_of_file = tmp.size();
-        client.Send((char*)&num_of_file, sizeof(num_of_file), 0);
-        for (int i = 0; i < num_of_file; i++)
+        num_of_file = size_cur - size_pre;
+        size_pre = size_cur;
+    }
+    bool isSuccessfull;
+    client.Send(&num_of_file, sizeof(num_of_file), 0);
+    client.Receive(&isSuccessfull, sizeof(bool), 0);
+    if (num_of_file > 0)
+    {
+        int v_size = size_pre;
+        for (int i = size_cur - num_of_file; i < size_cur; i++)
         {
             tmp[i].size_file_name = strlen(tmp[i].file_name);
             client.Send((char*)&tmp[i], sizeof(tmp[i]), 0);
@@ -70,45 +75,45 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
             client.Receive((char*)&(tmp[i].size_file), sizeof(tmp[i].size_file), 0);
             ofstream fout(tmp[i].file_name, ios::binary | ios::trunc);
             v.push_back({ move(fout), tmp[i] });
-            tmp.erase(tmp.begin());
-            num_of_file--;
-            i--;
         }
-    }
-    else
-    {
-        client.Send((char*)&isChange, sizeof(isChange), 0);
+        num_of_file--;
     }
 }
 void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp)
 {
-    {
-        std::lock_guard<std::mutex>lock(mtx);
-        checkIsUpdate(ref(client), v, tmp);
-    }
+    checkIsUpdate(ref(client), v, tmp);
     for (int i = 0; i < v.size(); i++)
     {
         for (int j = 0; j < v[i].second.priority; j++)
         {
             //Todo: receive 1 chunk 1024 byte to client
             Receive1Chunk(client, v, i);
+            // ============= Display DownLoad ========================
             gotoxy(0, 25 + i);
+            cout << v[i].second.file_name << " + Size: " << v.size() << "    ";
             cout << (v[i].second.current_size_file) * 100 / v[i].second.size_file << "%" << endl;
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
                 gotoxy(0, 25 + i);
-                cout << 100 << "%";
                 v[i].first.close();
+                delete[] v[i].second.file_name;
+                v[i].second.file_name = NULL;
+                //delete[] v[i].second.file_name;
                 v.erase(v.begin() + i);
+                cout << 100 << "%";
                 i--;
                 break;
             }
+            // ============= Display DownLoad ========================
         }
         bool isDone = true;
         client.Send((char*)&isDone, sizeof(isDone), 0);
     }
     //Check is modify.
 }
+
+
+//Thread
 vector<string> readListFile()
 {
     ifstream fin;
@@ -194,12 +199,10 @@ void checkInput(vector<File>& files, vector<string>list_file)
             else if (temp_2 == "HIGH") file_new.priority = 4;
             else if (temp_2 == "CRITICAL") file_new.priority = 10;
             file_need.push_back(file_new.file_name);
-            {
-                std::lock_guard<std::mutex>lock(mtx);
-                files.push_back(file_new);
-            }
+            files.push_back(file_new);
         }
         fin.close();
         this_thread::sleep_for(std::chrono::seconds(2));
     }
 }
+// this_thread::sleep_for(std::chrono::seconds(2));
