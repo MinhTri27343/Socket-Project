@@ -36,7 +36,7 @@ int main()
         }
         else
         {
-            //ShowCur(0);
+            ShowCur(0);
             // TODO: code your application's behavior here.
             AfxSocketInit(NULL);
             CSocket client;
