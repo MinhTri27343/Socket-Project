@@ -8,7 +8,11 @@ unsigned long long readSizeFile(string file_name)
     ifstream in;
     in.open(file_name, ios::binary);
     unsigned long long size = 0;
-    if (!in.is_open())return size;
+    if (!in.is_open())
+    {
+        cout << "Can not open file\n";
+        return size;
+    }
     else
     {
         in.seekg(0, ios::end);
@@ -65,12 +69,12 @@ void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
 void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
 {
     //Check is modify.
-    bool isChange;
-    client.Receive((char*)&isChange, sizeof(isChange), 0);
-    if (isChange == true)
+    int num_of_file;
+    bool isSuccessfull = true;
+    client.Receive((char*)&num_of_file, sizeof(num_of_file), 0);
+    client.Send(&isSuccessfull, sizeof(bool), 0);
+    if (num_of_file > 0)
     {
-        int num_of_file;
-        client.Receive((char*)&num_of_file, sizeof(num_of_file), 0);
         for (int i = 0; i < num_of_file; i++)
         {
             File tmp;
@@ -100,6 +104,8 @@ void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
                 v[i].first.close();
+                delete[] v[i].second.file_name;
+                v[i].second.file_name = NULL;
                 v.erase(v.begin() + i);
                 i--;
                 break;
