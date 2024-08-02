@@ -9,7 +9,7 @@ using namespace std;
 #define CORNER_LEFT_BOT char(192)
 #define CORNER_RIGHT_BOT char(217)
 #define CORNER_RIGHT_TOP char(191)
-
+std::mutex mtx;
 int size_pre = 0;
 void SignalCallBack(int signum) {
     exit(signum);
@@ -128,6 +128,7 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
         client.Receive(buff_receive, size_buff, 0);
         v[index].first.write(buff_receive, size_buff);
         v[index].second.current_size_file += size_buff;
+        delete[]buff_receive;
     }
     else
     {
@@ -136,6 +137,7 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
         client.Receive(buff_receive, byte_send, 0);
         v[index].first.write(buff_receive, byte_send);
         v[index].second.current_size_file += byte_send;
+        delete[]buff_receive;
     }
 }
 void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp)
@@ -147,9 +149,7 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
         num_of_file = size_cur - size_pre;
         size_pre = size_cur;
     }
-    bool isSuccessfull;
     client.Send(&num_of_file, sizeof(num_of_file), 0);
-    client.Receive(&isSuccessfull, sizeof(bool), 0);
     if (num_of_file > 0)
     {
         int v_size = size_pre;
@@ -177,12 +177,14 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
            
             v.push_back({ move(fout), temp });
         }
-        num_of_file--;
     }
 }
 void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp, int width_max)
 {
-    checkIsUpdate(ref(client), v, tmp);
+    {
+        checkIsUpdate(ref(client), v, tmp);
+        std::lock_guard<std::mutex> guard(mtx);
+    }
     for (int i = 0; i < tmp.size(); i++)
     {
         if (tmp[i].current_size_file == tmp[i].size_file)
@@ -248,7 +250,6 @@ vector<string> readListFile()
     fin.open("file.txt");
     if (!fin.is_open())
     {
-        cout << "\nCan not open file list_file.txt\n";
         return list_file;
     }
     else
@@ -276,7 +277,6 @@ void checkInput(vector<File>& files, vector<string>list_file)
         fin.open("input.txt");
         if (!fin.is_open())
         {
-            cout << "\nCan not open file input.txt.\n";
             return;
         }
         string temp;
@@ -300,7 +300,6 @@ void checkInput(vector<File>& files, vector<string>list_file)
             }
             if (!is_have)
             {
-                cout << "\nDont have file " << temp_2 << "\n";
                 continue;
             }
             bool is_exist = false;
@@ -308,7 +307,6 @@ void checkInput(vector<File>& files, vector<string>list_file)
             {
                 if (temp_2 == file_need[i])
                 {
-                    cout << "\nFile " << temp_2 << " is exist !\n";
                     is_exist = true;
                     break;
                 }
@@ -318,7 +316,6 @@ void checkInput(vector<File>& files, vector<string>list_file)
             getline(ss, temp_3, '\n');
             if (temp_3 != "NORMAL" && temp_3 != "HIGH" && temp_3 != "CRITICAL")
             {
-                cout << "\nPlease, enter priority !\n";
                 continue;
             }
           
@@ -332,10 +329,12 @@ void checkInput(vector<File>& files, vector<string>list_file)
             else if (temp_3 == "HIGH") file_new.priority = 4;
             else if (temp_3 == "CRITICAL") file_new.priority = 10;
             file_need.push_back(file_new.file_name);
-            files.push_back(file_new);
+            {
+                std::lock_guard<std::mutex> guard(mtx);
+                files.push_back(file_new);
+            }
         }
         fin.close();
         this_thread::sleep_for(std::chrono::seconds(2));
     }
 }
-// this_thread::sleep_for(std::chrono::seconds(2));
