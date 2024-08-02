@@ -55,18 +55,14 @@ void createBox(int  x, int  y, int  width, int  height)
 }
 void deleteContent(int x, int y, int width, int height)
 {
-  
     for (int i = x; i <x + width + 1; i++)
     {
-       
         for (int j = y; j < y + height + 1; j++)
         {
             gotoxy(i , j );
             cout << " ";
         }
     }
-  
-    
 }
 void ShowCur(bool CursorVisibility)
 {
@@ -124,18 +120,41 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
 {
     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
     {
+        int total_byte_sum = 0;
         char* buff_receive = new char[size_buff];
-        client.Receive(buff_receive, size_buff, 0);
-        v[index].first.write(buff_receive, size_buff);
+        int byte = client.Receive(buff_receive, size_buff, 0);
+        v[index].first.write(buff_receive, byte);
+
+        total_byte_sum += byte;
+        client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        while (total_byte_sum < size_buff)
+        {
+            cout << endl << "Hello";
+            byte = client.Receive(buff_receive, size_buff - total_byte_sum, 0);
+            v[index].first.write(buff_receive, byte);
+            total_byte_sum += byte;
+            client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        }
         v[index].second.current_size_file += size_buff;
         delete[]buff_receive;
     }
     else
     {
+        int total_byte_sum = 0;
         int byte_send = v[index].second.size_file - v[index].second.current_size_file;
         char* buff_receive = new char[byte_send];
-        client.Receive(buff_receive, byte_send, 0);
-        v[index].first.write(buff_receive, byte_send);
+        int byte = client.Receive(buff_receive, byte_send, 0);
+        v[index].first.write(buff_receive, byte);
+
+        total_byte_sum += byte;
+        client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        while (total_byte_sum < byte_send)
+        {
+            byte = client.Receive(buff_receive, byte_send - total_byte_sum, 0);
+            v[index].first.write(buff_receive, byte);
+            total_byte_sum += byte;
+            client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        }
         v[index].second.current_size_file += byte_send;
         delete[]buff_receive;
     }
@@ -185,14 +204,13 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
         checkIsUpdate(ref(client), v, tmp);
         std::lock_guard<std::mutex> guard(mtx);
     }
-    for (int i = 0; i < tmp.size(); i++)
+    for (int i = 0; i < tmp.size(); i++) //edit
     {
         if (tmp[i].current_size_file == tmp[i].size_file)
         {
             gotoxy(40 + width_max + 20, 11 + i);
             cout << "100%";
         }
-
     }
     for (int i = 0; i < v.size(); i++)
     {
@@ -202,17 +220,14 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
             Receive1Chunk(client, v, i);
             // ============= Display DownLoad ========================
 
-            for (int k = 0; k < tmp.size(); k++)
+            for (int k = 0; k < tmp.size(); k++) //edit
             {
-                
                 gotoxy(40 + width_max + 20, 11 + k);
-
                 if (strcmp(v[i].second.file_name, tmp[k].file_name) == 0 )
                 {
                     cout << (v[i].second.current_size_file) * 100 / v[i].second.size_file << "%" << endl;
                     break;
-                }
-               
+                }  
             }
             // ============= Display DownLoad ========================
 
