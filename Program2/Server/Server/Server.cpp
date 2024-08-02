@@ -17,6 +17,25 @@ CWinApp theApp;
 
 using namespace std;
 
+DWORD WINAPI function_cal(LPVOID arg)
+{
+    SOCKET* hConnected = (SOCKET*)arg;
+    CSocket mysock;
+    //Chuyen ve lai CSocket
+    mysock.Attach(*hConnected);
+    if (SendInfoAllFileToClient(ref(mysock)) == SOCKET_ERROR)
+    {
+        return 0;
+    }
+    vector<pair<ifstream, File>> v;
+    vector<File> tmp;
+    while (true)
+    {
+        SendFileDownloadToClient(ref(mysock), v);
+    }
+    delete hConnected;
+    return 0;
+}
 int main()
 {
     int nRetCode = 0;
@@ -36,31 +55,26 @@ int main()
         {
             // TODO: code your application's behavior here.
             AfxSocketInit(NULL);
-            CSocket sever;
-            sever.Create(1234);
-            cout << "Server is listening!\n";
-            sever.Listen();
-            CSocket client;
-            if (sever.Accept(client))
+            CSocket server, s;
+            DWORD threadID;
+            HANDLE threadStatus;
+            server.Create(1234);
+            do
             {
+                cout << "Server is listening!\n";
+                server.Listen();
+                server.Accept(s);
                 cout << "Connect is successful!\n";
-          
-                if (SendInfoAllFileToClient(ref(client)) == SOCKET_ERROR)
-                {
-                    return 0;
-                }
-                vector<pair<ifstream, File>> v;
-                vector<File> tmp;
-               
-                while (true)
-                {
-                    SendFileDownloadToClient(ref(client), v);
-                }
-            }
-            else
-            {
-                cout << "Connect is falled!\n";
-            }
+
+                //Khoi tao con tro Socket
+                SOCKET* hConnected = new SOCKET();
+                //Chuyển đỏi CSocket thanh Socket
+                *hConnected = s.Detach();
+                //Khoi tao thread tuong ung voi moi client Connect vao server.
+                //Nhu vay moi client se doc lap nhau, khong phai cho doi tung client xu ly rieng
+                threadStatus = CreateThread(NULL, 0, function_cal, hConnected, 0, &threadID);
+            } while (true);
+            
         }
     }
     else
