@@ -52,6 +52,7 @@ void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
 {
      if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
      {
+         v[index].first.seekg(v[index].second.current_size_file, 0); //edit
          int total_byte_sum;
          char* buff_send = new char[size_buff];
          v[index].first.read(buff_send, size_buff);
@@ -69,6 +70,7 @@ void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
      }
      else
      {
+         v[index].first.seekg(v[index].second.current_size_file, 0); //edit
          int total_byte_sum;
          int byte_send = v[index].second.size_file - v[index].second.current_size_file;
          char* buff_send = new char[byte_send];
@@ -91,6 +93,8 @@ void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
     //Check is modify.
     int num_of_file;
     client.Receive((char*)&num_of_file, sizeof(num_of_file), 0);
+    bool isSuccessful = true; //edit
+    client.Send(&isSuccessful, sizeof(bool), 0);
     if (num_of_file > 0)
     {
         for (int i = 0; i < num_of_file; i++)
@@ -112,6 +116,8 @@ void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
 void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
 {
     isCheckUpdate(ref(client), v);
+    bool isDone; //edit
+    client.Receive((char*)&isDone, sizeof(isDone), 0);
     for (int i = 0; i < v.size(); i++)
     {
         for (int j = 0; j < v[i].second.priority; j++)
@@ -119,6 +125,8 @@ void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
             //Todo: send 1 chunk 1024 byte to client
             Send1Chunk(ref(client), v, i); //if don't have enough 1 chunk equal to 1024 byte, send all
             //want to delete 1 file in vector to do here
+            bool isDone; //edit
+            client.Receive((char*)&isDone, sizeof(isDone), 0);
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
                 v[i].first.close();
@@ -129,7 +137,7 @@ void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
                 break;
             }
         }
-        bool isDone;
+        bool isDone; //edit
         client.Receive((char*)&isDone, sizeof(isDone), 0);
     }
 }
