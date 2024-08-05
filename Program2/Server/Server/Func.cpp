@@ -43,7 +43,8 @@ bool SendInfoAllFileToClient(CSocket& client)
         if (client.Send(buffer, size_list_file, 0) == SOCKET_ERROR)
             return false;
         delete[] buffer;
-        cout << "Sending file text is successful!\n";
+        cout << "Sending list file is successful!\n";
+        cout << "\n";
         in.close();
     }
     return true;
@@ -115,6 +116,8 @@ void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
             Send1Chunk(ref(client), v, i);
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
+                cout << "Sent file " << v[i].second.file_name << " to client.\n";
+
                 v[i].first.close();
                 delete[] v[i].second.file_name;
                 v[i].second.file_name = NULL;
