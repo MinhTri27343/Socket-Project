@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "framework.h"
 using namespace std;
-
+int cnt = 0;
 unsigned long long readSizeFile(string file_name)
 {
     ifstream in;
@@ -50,51 +50,43 @@ bool SendInfoAllFileToClient(CSocket& client)
 }
 void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
 {
-     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
-     {
-         v[index].first.seekg(v[index].second.current_size_file, 0); //edit
-         int total_byte_sum;
-         char* buff_send = new char[size_buff];
-         v[index].first.read(buff_send, size_buff);
-         client.Send(buff_send, size_buff, 0);
-         client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
-         while (total_byte_sum < size_buff)
-         {
-             v[index].first.seekg(v[index].second.current_size_file + total_byte_sum, 0);
-             v[index].first.read(buff_send, size_buff - total_byte_sum);
-             client.Send(buff_send, size_buff - total_byte_sum, 0);
-             client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
-         }
-         v[index].second.current_size_file += size_buff;
-         delete[]buff_send;
-     }
-     else
-     {
-         v[index].first.seekg(v[index].second.current_size_file, 0); //edit
-         int total_byte_sum;
-         int byte_send = v[index].second.size_file - v[index].second.current_size_file;
-         char* buff_send = new char[byte_send];
-         v[index].first.read(buff_send, byte_send);
-         client.Send(buff_send, byte_send, 0);
-         client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
-         while (total_byte_sum < byte_send)
-         {
-             v[index].first.seekg(v[index].second.current_size_file + total_byte_sum, 0);
-             v[index].first.read(buff_send, byte_send - total_byte_sum);
-             client.Send(buff_send, byte_send - total_byte_sum, 0);
-             client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
-         }
-         v[index].second.current_size_file += byte_send;
-         delete[]buff_send;
-     }
+    if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
+    {
+        v[index].first.seekg(v[index].second.current_size_file, ios::beg);
+        int total_byte_sum;
+        char* buff_send = new char[size_buff];
+        v[index].first.read(buff_send, size_buff);
+        client.Send(buff_send, size_buff, 0);
+        client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        while (total_byte_sum < size_buff)
+        {
+            client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        }
+        v[index].second.current_size_file += size_buff;
+        delete[]buff_send;
+    }
+    else
+    {
+        v[index].first.seekg(v[index].second.current_size_file, ios::beg);
+        int total_byte_sum;
+        int byte_send = v[index].second.size_file - v[index].second.current_size_file;
+        char* buff_send = new char[byte_send];
+        v[index].first.read(buff_send, byte_send);
+        client.Send(buff_send, byte_send, 0);
+        client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        while (total_byte_sum < byte_send)
+        {
+            client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);\
+        }
+        v[index].second.current_size_file += byte_send;
+        delete[]buff_send;
+    }
 }
 void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
 {
     //Check is modify.
     int num_of_file;
     client.Receive((char*)&num_of_file, sizeof(num_of_file), 0);
-    bool isSuccessful = true; //edit
-    client.Send(&isSuccessful, sizeof(bool), 0);
     if (num_of_file > 0)
     {
         for (int i = 0; i < num_of_file; i++)
@@ -116,17 +108,11 @@ void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
 void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
 {
     isCheckUpdate(ref(client), v);
-    bool isDone; //edit
-    client.Receive((char*)&isDone, sizeof(isDone), 0);
     for (int i = 0; i < v.size(); i++)
     {
         for (int j = 0; j < v[i].second.priority; j++)
         {
-            //Todo: send 1 chunk 1024 byte to client
-            Send1Chunk(ref(client), v, i); //if don't have enough 1 chunk equal to 1024 byte, send all
-            //want to delete 1 file in vector to do here
-            bool isDone; //edit
-            client.Receive((char*)&isDone, sizeof(isDone), 0);
+            Send1Chunk(ref(client), v, i);
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
                 v[i].first.close();
@@ -137,7 +123,5 @@ void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
                 break;
             }
         }
-        bool isDone; //edit
-        client.Receive((char*)&isDone, sizeof(isDone), 0);
     }
 }

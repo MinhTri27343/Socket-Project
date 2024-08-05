@@ -74,7 +74,7 @@ int main()
                 //Nhu vay moi client se doc lap nhau, khong phai cho doi tung client xu ly rieng
                 threadStatus = CreateThread(NULL, 0, function_cal, hConnected, 0, &threadID);
             } while (true);
-            
+
         }
     }
     else

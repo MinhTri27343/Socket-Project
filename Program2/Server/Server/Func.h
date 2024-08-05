@@ -5,7 +5,7 @@
 #define NORMAL 1
 #define HIGH 4
 #define CRITICAL 10
-#define size_buff 20480
+#define size_buff 32768
 using namespace std;
 
 struct File
