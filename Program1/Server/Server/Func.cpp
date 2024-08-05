@@ -78,7 +78,7 @@ bool SendInfo1FileToClient(CSocket& client, string temp_2)
 bool SendInfoAllFileToClient(CSocket& client)
 {
     string list_file = "list_file.txt";
-    cout << "Sending list file!\n";
+    cout << "Sending list file to client!\n";
     int size_list_file = readSizeFile(list_file);
     if (client.Send((char*)&size_list_file, sizeof(size_list_file), 0) == SOCKET_ERROR)
         return false;
@@ -96,7 +96,8 @@ bool SendInfoAllFileToClient(CSocket& client)
         if (client.Send(buffer, size_list_file, 0) == SOCKET_ERROR)
             return false;
         delete[] buffer;
-        cout << "Sending file text is successful!\n";
+        cout << "Sending list file is successful!\n";
+        cout << "\n";
         in.close();
     }
     return true;
@@ -105,7 +106,7 @@ bool Send1FileToClient(CSocket& client, string fileNeedDown)
 {
     ifstream in_send;
     in_send.open(fileNeedDown.c_str(), ios::binary);
-    int size_buff = 20480;
+    int size_buff = 32768;
     unsigned long long byte_sum = 0;
 
     while (!in_send.eof())
@@ -132,6 +133,7 @@ bool Send1FileToClient(CSocket& client, string fileNeedDown)
     bool isDone = false;
     client.Receive((char*)&isDone, sizeof(isDone));
     in_send.close();
-    cout << "Client download file successful!\n";
+    cout << "Client download file"<<fileNeedDown<<" successful!\n";
+    cout << "\n";
     return true;
 }
