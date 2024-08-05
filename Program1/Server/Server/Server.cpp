@@ -32,18 +32,29 @@ int main()
         }
         else
         {
+            
             // =============================================================
             AfxSocketInit(NULL);
             CSocket sever;
             sever.Create(1234);
-            cout << "Server is listening!\n";
+           
             sever.Listen();
             CSocket client;
             while (true)
             {
+                system("cls");
+                cout << "\t\t\t\t\t ____  _____ ______     _______ ____\n";
+                cout << "\t\t\t\t\t/ ___|| ____|  _ \\ \\   / /____ |  _ \\\n";
+                cout << "\t\t\t\t\t\\___ \\|  _| | |_) \\ \\ / /|  _| | |_) |\n";
+                cout << "\t\t\t\t\t ___) | |___|  _ < \\ V / | |___|  _ <\n";
+                cout << "\t\t\t\t\t|____/|_____|_| \\_\\ \\_/  |_____|_| \\_\\\n";
+
+                cout << "\n================================================================================================================\n";
+
+                cout << "Server is listening!\n";
                 if (sever.Accept(client))
                 {
-                    cout << "Connect is successful!\n";
+                    cout << "Connected is successful!\n";
 
                     //===========================================Sent file list_file=============================================================
                     if (SendInfoAllFileToClient(ref(client)) == false)
@@ -62,7 +73,7 @@ int main()
                             cout << "Disconnected from client" << endl;
                             break;
                         }
-                        cout << "Received file need to download!\n";
+                        cout << "Received list file need to download!\n";
                         //===========Send file ==============================================================
                         string file_recei = "list_file_recei.txt";
                         in.open(file_recei);
@@ -104,6 +115,7 @@ int main()
                 {
                     cout << "Connect is falled!\n";
                 }
+                system("pause");
             }
             /*}*/
             // =============================================================
