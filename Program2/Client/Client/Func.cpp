@@ -11,13 +11,11 @@ using namespace std;
 std::mutex mtx;
 int size_pre = 0;
 void SignalCallBack(int signum) {
+    COORD pos = getCoordinate();
+    gotoxy(0, pos.Y + 10);
     exit(signum);
 }
-void signal_callback_handler(int signum) {
-    cout << "Caught signal " << signum << endl;
-    // Terminate program
-    exit(signum);
-}
+
 //=======================Display=============================================
 void gotoxy(int x, int y)
 {
@@ -97,17 +95,30 @@ void displayPercent(int &number_of_file, vector<File> files, int &width_max)
 //======================= End Display=============================================
 void ReceiveInfoAllFileFromServer(CSocket& client)
 {
+    cout << "LIST FILE\n";
     string file_name = "file.txt";
     ofstream fout;
     fout.open(file_name, ios::out | ios::binary);
-    unsigned long long byte;
+    int byte;
     client.Receive((char*)&byte, sizeof(byte), 0);
     char* msg = new char[byte + 1];
     client.Receive(msg, byte, 0);
     msg[byte] = '\0';
 
     fout << msg;
-    cout << msg;
+    stringstream ss(msg);
+    string name, size;
+    string temp;
+    while (getline(ss, temp, '\n'))
+    {
+        stringstream sss(temp);
+
+        getline(sss, name, ' ');
+        cout << "Name: " << name << "\t";
+        getline(sss, size, '\n');
+        cout << "Size: " << size << "\n";
+    }
+
 
     fout.close();
     delete[] msg;
@@ -115,6 +126,7 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 }
 void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
 {
+
     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
     {
         int total_byte_sum = 0;
@@ -153,6 +165,7 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
         v[index].second.current_size_file += byte_send;
         delete[]buff_receive;
     }
+   
 }
 void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp)
 {
@@ -344,4 +357,20 @@ void checkInput(vector<File>& files, vector<string>list_file)
         fin.close();
         this_thread::sleep_for(std::chrono::seconds(2));
     }
+}
+//======
+COORD getCoordinate()
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD cursorPos;
+
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+        cursorPos = csbi.dwCursorPosition;
+    }
+    else {
+        cerr << "Can't get information for buffer of console." << endl;
+    }
+    return cursorPos;
 }
