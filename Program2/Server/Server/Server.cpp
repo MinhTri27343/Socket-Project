@@ -19,6 +19,9 @@ using namespace std;
 
 DWORD WINAPI function_cal(LPVOID arg)
 {
+    
+    cout << "Connect is successful!\n";
+
     SOCKET* hConnected = (SOCKET*)arg;
     CSocket mysock;
     //Chuyen ve lai CSocket
@@ -53,6 +56,13 @@ int main()
         }
         else
         {
+            cout << "\t\t\t\t\t ____  _____ ______     _______ ____\n";
+            cout << "\t\t\t\t\t/ ___|| ____|  _ \\ \\   / /____ |  _ \\\n";
+            cout << "\t\t\t\t\t\\___ \\|  _| | |_) \\ \\ / /|  _| | |_) |\n";
+            cout << "\t\t\t\t\t ___) | |___|  _ < \\ V / | |___|  _ <\n";
+            cout << "\t\t\t\t\t|____/|_____|_| \\_\\ \\_/  |_____|_| \\_\\\n";
+
+            cout << "\n================================================================================================================\n";
             // TODO: code your application's behavior here.
             AfxSocketInit(NULL);
             CSocket server, s;
@@ -61,10 +71,11 @@ int main()
             server.Create(1234);
             do
             {
-                cout << "Server is listening!\n";
                 server.Listen();
+                cout << "Server is listening!\n";
                 server.Accept(s);
-                cout << "Connect is successful!\n";
+                cout << "\n";
+
 
                 //Khoi tao con tro Socket
                 SOCKET* hConnected = new SOCKET();
