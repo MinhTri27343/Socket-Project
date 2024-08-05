@@ -48,11 +48,11 @@ int main()
             cout << "\t \t \t \t \t| |   | |    | ||  _| |  \\| | | |  \n";
             cout << "\t \t \t \t \t| |___| |___ | || |___| |\\  | | |  \n";
             cout << "\t \t \t \t \t \\____|_____|___|_____|_| \\_| |_|  \n";
-            // input
-            /*cout << "Input IP address of server: "; cin >> ip;
-            cout << "Input port of server: "; cin >> port;*/
+            
+            cout << "Input IP address of server: "; cin >> ip;
+            cout << "Input port of server: "; cin >> port;
 
-            if (client.Connect(CA2W("127.0.0.1"), 1234))
+            if (client.Connect(CA2W(ip), 1234))
             {
                 cout << "\nClient has connected to the server";
                 cout << endl;
