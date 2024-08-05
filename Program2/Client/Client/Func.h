@@ -6,7 +6,7 @@ using namespace std;
 #define NORMAL 1
 #define HIGH 4
 #define CRITICAL 10
-#define size_buff 20480
+#define size_buff 32768
 struct File
 {
     int size_file_name = 0;
@@ -28,3 +28,5 @@ void createBox(int  x, int  y, int  width, int  height);
 void deleteContent(int x, int y, int width, int height);
 void ShowCur(bool CursorVisibility);
 void displayPercent(int& number_of_file, vector<File> files, int& width_max);
+//=====
+COORD getCoordinate();
