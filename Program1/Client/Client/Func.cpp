@@ -210,6 +210,7 @@ void ReceiveInfo1FileFromServer(CSocket& client, int& size_name_file_download, u
 }
 void ReceiveInfoAllFileFromServer(CSocket& client)
 {
+
 	string file_name = "file.txt";
 	ofstream fout;
 	fout.open(file_name, ios::out | ios::binary);
@@ -218,9 +219,21 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
 	char* msg = new char[byte + 1];
 	client.Receive(msg, byte, 0);
 	msg[byte] = '\0';
-
+	cout << "LIST FILE\n";
 	fout << msg;
-	cout << msg;
+	stringstream ss(msg);
+	string name, size;
+	string temp;
+	while (getline(ss, temp, '\n'))
+	{
+		stringstream sss(temp);
+
+		getline(sss, name, ' ');
+		cout << "Name: " << name << "\t";
+		getline(sss, size, '\n');
+		cout << "Size: " << size << "\n";
+	}
+	
 
 	fout.close();
 	delete[] msg;
@@ -231,7 +244,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	ShowCur(0);
 	int height = 2 + cnt_file;
 	unsigned long long byte_sum = size_file_download;
-	int coordinate_x = 30;
+	int coordinate_x = 40;
 	int coordinate_y = cursorPos.Y + 3;
 	deleteBox(coordinate_x, coordinate_y, 30 + max_length_file, height - 1);
 
@@ -250,7 +263,7 @@ void Receive1FileFromServer(CSocket& client, char* name_file_download, unsigned 
 	}
 	
 	unsigned long long total_byte_curr = 0;
-	int byte_read = 20480;
+	int byte_read = 32768;
 
 	while (total_byte_curr < size_file_download)
 	{
