@@ -2,7 +2,6 @@
 #include "pch.h"
 #include"framework.h"
 using namespace std;
-
 #define HORIZONTAL_LINE char(196)
 #define VERTICAL_LINE char(179)
 #define CORNER_LEFT_TOP char(218)
@@ -96,7 +95,6 @@ void displayPercent(int &number_of_file, vector<File> files, int &width_max)
     }
 }
 //======================= End Display=============================================
-
 void ReceiveInfoAllFileFromServer(CSocket& client)
 {
     string file_name = "file.txt";
@@ -115,7 +113,6 @@ void ReceiveInfoAllFileFromServer(CSocket& client)
     delete[] msg;
     cout << "\n";
 }
-
 void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
 {
     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
@@ -124,7 +121,6 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
         char* buff_receive = new char[size_buff];
         int byte = client.Receive(buff_receive, size_buff, 0);
         v[index].first.write(buff_receive, byte);
-
         total_byte_sum += byte;
         client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
         while (total_byte_sum < size_buff)
@@ -168,8 +164,6 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
         size_pre = size_cur;
     }
     client.Send(&num_of_file, sizeof(num_of_file), 0);
-    bool isSuccessful;
-    client.Receive(&isSuccessful, sizeof(bool), 0);
     if (num_of_file > 0)
     {
         int v_size = size_pre;
@@ -201,10 +195,10 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
 }
 void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp, int width_max)
 {
-    //{
+    {
         checkIsUpdate(ref(client), v, tmp);
-        //std::lock_guard<std::mutex> guard(mtx);
-    //}
+        std::lock_guard<std::mutex> guard(mtx);
+    }
     for (int i = 0; i < tmp.size(); i++) //edit
     {
         if (tmp[i].current_size_file == tmp[i].size_file)
@@ -213,18 +207,13 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
             cout << "100%";
         }
     }
-    bool isDone = true;
-    client.Send((char*)&isDone, sizeof(isDone), 0);
     for (int i = 0; i < v.size(); i++)
     {
         for (int j = 0; j < v[i].second.priority; j++)
         {
             //Todo: receive 1 chunk 1024 byte to client
             Receive1Chunk(client, v, i);
-            bool isDone = true;
-            client.Send((char*)&isDone, sizeof(isDone), 0);
             // ============= Display DownLoad ========================
-
             for (int k = 0; k < tmp.size(); k++) //edit
             {
                 gotoxy(40 + width_max + 20, 11 + k);
@@ -254,8 +243,6 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
                 break;
             }
         }
-        bool isDone = true;
-        client.Send((char*)&isDone, sizeof(isDone), 0);
     }
     //Check is modify.
 }
@@ -349,10 +336,10 @@ void checkInput(vector<File>& files, vector<string>list_file)
             else if (temp_3 == "HIGH") file_new.priority = 4;
             else if (temp_3 == "CRITICAL") file_new.priority = 10;
             file_need.push_back(file_new.file_name);
-            //{
-                //std::lock_guard<std::mutex> guard(mtx);
+            {
+                std::lock_guard<std::mutex> guard(mtx);
                 files.push_back(file_new);
-            //}
+            }
         }
         fin.close();
         this_thread::sleep_for(std::chrono::seconds(2));
