@@ -2,7 +2,6 @@
 #include "pch.h"
 #include "framework.h"
 using namespace std;
-int cnt = 0;
 unsigned long long readSizeFile(string file_name)
 {
     ifstream in;
@@ -26,7 +25,7 @@ bool SendInfoAllFileToClient(CSocket& client)
 {
     string list_file = "list_file.txt";
     cout << "Sending list file!\n";
-    unsigned long long size_list_file = readSizeFile(list_file);
+    int size_list_file = readSizeFile(list_file);
     if (client.Send((char*)&size_list_file, sizeof(size_list_file), 0) == SOCKET_ERROR)
         return false;
     ifstream in;
@@ -49,7 +48,7 @@ bool SendInfoAllFileToClient(CSocket& client)
     }
     return true;
 }
-void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
+bool Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
 {
     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
     {
@@ -57,11 +56,14 @@ void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
         int total_byte_sum;
         char* buff_send = new char[size_buff];
         v[index].first.read(buff_send, size_buff);
-        client.Send(buff_send, size_buff, 0);
-        client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        if (client.Send(buff_send, size_buff, 0) == SOCKET_ERROR)
+            return false;
+        if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
+            return false;
         while (total_byte_sum < size_buff)
         {
-            client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+            if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
+                return false;
         }
         v[index].second.current_size_file += size_buff;
         delete[]buff_send;
@@ -73,47 +75,59 @@ void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
         int byte_send = v[index].second.size_file - v[index].second.current_size_file;
         char* buff_send = new char[byte_send];
         v[index].first.read(buff_send, byte_send);
-        client.Send(buff_send, byte_send, 0);
-        client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+        if (client.Send(buff_send, byte_send, 0) == SOCKET_ERROR)
+            return false;
+        if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
+            return false;
         while (total_byte_sum < byte_send)
         {
-            client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0);\
+            if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
+                return false;
         }
         v[index].second.current_size_file += byte_send;
         delete[]buff_send;
     }
+    return true;
 }
-void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
+bool isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v)
 {
     //Check is modify.
     int num_of_file;
-    client.Receive((char*)&num_of_file, sizeof(num_of_file), 0);
+    if (client.Receive((char*)&num_of_file, sizeof(num_of_file), 0) == SOCKET_ERROR)
+        return false;
     if (num_of_file > 0)
     {
         for (int i = 0; i < num_of_file; i++)
         {
             File tmp;
-            client.Receive((char*)&tmp, sizeof(tmp), 0);
+            if (client.Receive((char*)&tmp, sizeof(tmp), 0) == SOCKET_ERROR)
+                return false;
             int byte_file_name;
-            client.Receive((char*)&byte_file_name, sizeof(byte_file_name), 0);
+            if (client.Receive((char*)&byte_file_name, sizeof(byte_file_name), 0) == SOCKET_ERROR)
+                return false;
             tmp.file_name = new char[byte_file_name + 1];
-            client.Receive(tmp.file_name, byte_file_name, 0);
+            if (client.Receive(tmp.file_name, byte_file_name, 0) == SOCKET_ERROR)
+                return false;
             tmp.file_name[byte_file_name] = '\0';
             tmp.size_file = readSizeFile(tmp.file_name);
-            client.Send((char*)&(tmp.size_file), sizeof(tmp.size_file), 0);
+            if (client.Send((char*)&(tmp.size_file), sizeof(tmp.size_file), 0) == SOCKET_ERROR)
+                return false;
             ifstream fin(tmp.file_name, ios::binary);
             v.push_back({ move(fin), tmp });
         }
     }
+    return true;
 }
-void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
+bool SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
 {
-    isCheckUpdate(ref(client), v);
+    if (isCheckUpdate(ref(client), v) == false)
+        return false;
     for (int i = 0; i < v.size(); i++)
     {
         for (int j = 0; j < v[i].second.priority; j++)
         {
-            Send1Chunk(ref(client), v, i);
+            if (Send1Chunk(ref(client), v, i) == false)
+                return false;
             if (v[i].second.current_size_file == v[i].second.size_file)
             {
                 cout << "Sent file " << v[i].second.file_name << " to client.\n";
@@ -127,4 +141,5 @@ void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
             }
         }
     }
+    return true;
 }
