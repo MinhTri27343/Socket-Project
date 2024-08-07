@@ -26,7 +26,7 @@ DWORD WINAPI function_cal(LPVOID arg)
     CSocket mysock;
     //Chuyen ve lai CSocket
     mysock.Attach(*hConnected);
-    if (SendInfoAllFileToClient(ref(mysock)) == SOCKET_ERROR)
+    if (SendInfoAllFileToClient(ref(mysock)) == false)
     {
         return 0;
     }
@@ -34,8 +34,10 @@ DWORD WINAPI function_cal(LPVOID arg)
     vector<File> tmp;
     while (true)
     {
-        SendFileDownloadToClient(ref(mysock), v);
+        if (SendFileDownloadToClient(ref(mysock), v) == false)
+            break;
     }
+    cout << endl << "Disconnected from client" << endl;
     delete hConnected;
     return 0;
 }
@@ -62,7 +64,6 @@ int main()
             cout << "\t\t\t\t\t ___) | |___|  _ < \\ V / | |___|  _ <\n";
             cout << "\t\t\t\t\t|____/|_____|_| \\_\\ \\_/  |_____|_| \\_\\\n";
 
-            cout << "\n================================================================================================================\n";
             // TODO: code your application's behavior here.
             AfxSocketInit(NULL);
             CSocket server, s;
