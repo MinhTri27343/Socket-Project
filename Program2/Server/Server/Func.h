@@ -18,6 +18,6 @@ struct File
 };
 unsigned long long readSizeFile(string file_name);
 bool SendInfoAllFileToClient(CSocket& client);
-void Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index);
-void isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v);
-void SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v);
+bool Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index);
+bool isCheckUpdate(CSocket& client, vector<pair<ifstream, File>>& v);
+bool SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v);
