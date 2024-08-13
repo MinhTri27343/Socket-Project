@@ -188,8 +188,15 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
             client.Send((char*)&byte_file_name, sizeof(byte_file_name), 0);
             client.Send(tmp[i].file_name, byte_file_name, 0);
             client.Receive((char*)&(tmp[i].size_file), sizeof(tmp[i].size_file), 0);
-            ofstream fout(tmp[i].file_name, ios::binary | ios::trunc);
-            
+            char a[1000] = "output/";
+            string file_name = tmp[i].file_name;
+
+            ofstream fout(("output/" + file_name).c_str(), ios::binary | ios::trunc);
+            if (!fout)
+            {
+                cout << "Can not open file\n";
+                return;
+            }
             File temp;
             temp.current_size_file = tmp[i].current_size_file;
 
