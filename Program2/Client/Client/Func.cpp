@@ -1,3 +1,4 @@
+
 #include"Func.h"
 #include "pch.h"
 #include"framework.h"
@@ -52,11 +53,11 @@ void createBox(int  x, int  y, int  width, int  height)
 }
 void deleteContent(int x, int y, int width, int height)
 {
-    for (int i = x; i <x + width + 1; i++)
+    for (int i = x; i < x + width + 1; i++)
     {
         for (int j = y; j < y + height + 1; j++)
         {
-            gotoxy(i , j );
+            gotoxy(i, j);
             cout << " ";
         }
     }
@@ -67,7 +68,7 @@ void ShowCur(bool CursorVisibility)
     CONSOLE_CURSOR_INFO cursor = { 1, CursorVisibility };
     SetConsoleCursorInfo(handle, &cursor);
 }
-void displayPercent(int &number_of_file, vector<File> files, int &width_max)
+void displayPercent(int& number_of_file, vector<File> files, int& width_max)
 {
     if (number_of_file != files.size())
     {
@@ -87,7 +88,7 @@ void displayPercent(int &number_of_file, vector<File> files, int &width_max)
             gotoxy(40 + 1, 11 + i);
             cout << "Downloading " << files[i].file_name << " ...";
         }
-        
+
         number_of_file = files.size();
 
     }
@@ -134,13 +135,13 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
         int byte = client.Receive(buff_receive, size_buff, 0);
         v[index].first.write(buff_receive, byte);
         total_byte_sum += byte;
-        client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+  
         while (total_byte_sum < size_buff)
         {
             byte = client.Receive(buff_receive, size_buff - total_byte_sum, 0);
             v[index].first.write(buff_receive, byte);
             total_byte_sum += byte;
-            client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+          
         }
         v[index].second.current_size_file += size_buff;
         delete[]buff_receive;
@@ -154,18 +155,18 @@ void Receive1Chunk(CSocket& client, vector<pair<ofstream, File>>& v, int index)
         v[index].first.write(buff_receive, byte);
 
         total_byte_sum += byte;
-        client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+      
         while (total_byte_sum < byte_send)
         {
             byte = client.Receive(buff_receive, byte_send - total_byte_sum, 0);
             v[index].first.write(buff_receive, byte);
             total_byte_sum += byte;
-            client.Send((char*)&total_byte_sum, sizeof(total_byte_sum), 0);
+           
         }
         v[index].second.current_size_file += byte_send;
         delete[]buff_receive;
     }
-   
+
 }
 void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File>& tmp)
 {
@@ -201,13 +202,13 @@ void checkIsUpdate(CSocket& client, vector<pair<ofstream, File>>& v, vector<File
 
             int len = strlen(tmp[i].file_name);
             temp.file_name = new char[len + 1];
-            strcpy_s(temp.file_name,len + 1, tmp[i].file_name);
+            strcpy_s(temp.file_name, len + 1, tmp[i].file_name);
             temp.file_name[len] = '\0';
 
             temp.priority = tmp[i].priority;
             temp.size_file = tmp[i].size_file;
             temp.size_file_name = tmp[i].size_file_name;
-           
+
             v.push_back({ move(fout), temp });
         }
     }
@@ -236,11 +237,11 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
             for (int k = 0; k < tmp.size(); k++) //edit
             {
                 gotoxy(40 + width_max + 20, 11 + k);
-                if (strcmp(v[i].second.file_name, tmp[k].file_name) == 0 )
+                if (strcmp(v[i].second.file_name, tmp[k].file_name) == 0)
                 {
                     cout << (v[i].second.current_size_file) * 100 / v[i].second.size_file << "%" << endl;
                     break;
-                }  
+                }
             }
             // ============= Display DownLoad ========================
 
@@ -256,7 +257,7 @@ void ReceiveFileDownloadToClient(CSocket& client, vector<pair<ofstream, File>>& 
                 }
                 v[i].first.close();
                 delete[] v[i].second.file_name;
-                v[i].second.file_name = NULL;         
+                v[i].second.file_name = NULL;
                 v.erase(v.begin() + i);
                 i--;
                 break;
@@ -344,7 +345,7 @@ void checkInput(vector<File>& files, vector<string>list_file)
             {
                 continue;
             }
-          
+
             File file_new;
 
             file_new.file_name = new char[temp_2.length() + 1];
