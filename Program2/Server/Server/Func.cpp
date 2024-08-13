@@ -50,40 +50,27 @@ bool SendInfoAllFileToClient(CSocket& client)
 }
 bool Send1Chunk(CSocket& client, vector<pair<ifstream, File>>& v, int index)
 {
+    
     if (v[index].second.current_size_file + size_buff <= v[index].second.size_file)
     {
-        v[index].first.seekg(v[index].second.current_size_file, ios::beg);
-        int total_byte_sum;
+        
         char* buff_send = new char[size_buff];
         v[index].first.read(buff_send, size_buff);
         if (client.Send(buff_send, size_buff, 0) == SOCKET_ERROR)
             return false;
-        if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
-            return false;
-        while (total_byte_sum < size_buff)
-        {
-            if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
-                return false;
-        }
         v[index].second.current_size_file += size_buff;
         delete[]buff_send;
     }
     else
     {
-        v[index].first.seekg(v[index].second.current_size_file, ios::beg);
-        int total_byte_sum;
+     
+        
         int byte_send = v[index].second.size_file - v[index].second.current_size_file;
         char* buff_send = new char[byte_send];
         v[index].first.read(buff_send, byte_send);
         if (client.Send(buff_send, byte_send, 0) == SOCKET_ERROR)
             return false;
-        if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
-            return false;
-        while (total_byte_sum < byte_send)
-        {
-            if (client.Receive((char*)&total_byte_sum, sizeof(total_byte_sum), 0) == SOCKET_ERROR)
-                return false;
-        }
+      
         v[index].second.current_size_file += byte_send;
         delete[]buff_send;
     }
@@ -126,6 +113,8 @@ bool SendFileDownloadToClient(CSocket& client, vector<pair<ifstream, File>>& v)
     {
         for (int j = 0; j < v[i].second.priority; j++)
         {
+           
+
             if (Send1Chunk(ref(client), v, i) == false)
                 return false;
             if (v[i].second.current_size_file == v[i].second.size_file)
